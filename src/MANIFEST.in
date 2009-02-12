@@ -1,0 +1,6 @@
+setup.py
+recursive-include cr_flux *.py
+recursive-include cr_flux/data *.dat
+recursive-include cr_flux/data *.gz
+recursive-include test *.py
+recursive-include examples *.py
