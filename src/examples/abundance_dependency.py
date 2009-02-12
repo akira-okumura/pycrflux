@@ -1,6 +1,6 @@
 """
 Example of plotting abundance dependency of gamma-ray emission
-$Id: abundance_dependency.py,v 1.1 2009/02/12 18:14:48 oxon Exp $
+$Id: abundance_dependency.py,v 1.2 2009/02/12 18:21:32 oxon Exp $
 """
 
 import cr_flux
@@ -9,34 +9,6 @@ import ROOT
 # Definition of nuclei based on Gaisser and Schaefer (1992)
 H = cr_flux.Nucleus(1, 1)
 He= cr_flux.Nucleus(4, 2)
-Li= cr_flux.Nucleus(7, 3)
-Be= cr_flux.Nucleus(9, 4)
-B = cr_flux.Nucleus(11, 5)
-C = cr_flux.Nucleus(12, 6)
-N = cr_flux.Nucleus(14, 7)
-O = cr_flux.Nucleus(16, 8)
-F = cr_flux.Nucleus(19, 9)
-Ne= cr_flux.Nucleus(20, 10)
-Na= cr_flux.Nucleus(23, 11)
-Mg= cr_flux.Nucleus(24, 12)
-Al= cr_flux.Nucleus(27, 13)
-Si= cr_flux.Nucleus(28, 14)
-P = cr_flux.Nucleus(31, 15)
-S = cr_flux.Nucleus(32, 16)
-Cl= cr_flux.Nucleus(35, 17)
-Ar= cr_flux.Nucleus(40, 18)
-K = cr_flux.Nucleus(39, 19)
-Ca= cr_flux.Nucleus(40, 20)
-Sc= cr_flux.Nucleus(45, 21)
-Ti= cr_flux.Nucleus(48, 22)
-V = cr_flux.Nucleus(51, 23)
-Cr= cr_flux.Nucleus(52, 24)
-Mn= cr_flux.Nucleus(55, 25)
-Fe= cr_flux.Nucleus(56, 26)
-
-pars = [H, He,\
-        Li, Be, B, C, N, F, Ne, Na, Mg, Al, Si, P, S, Cl, Ar,
-        K, Ca, Sc, Ti, V, Cr, Mn, Fe]
 
 gaisser = cr_flux.gaisser_table
 
