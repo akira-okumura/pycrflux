@@ -1,6 +1,6 @@
 """
 Unit test script for spectrum.py
-$Id: test_spectrum.py,v 1.1 2009/02/12 18:12:35 oxon Exp $ 
+$Id: test_spectrum.py,v 1.2 2009/02/14 07:12:58 oxon Exp $ 
 """
 
 import numpy
@@ -37,6 +37,12 @@ class TestSpectrum(unittest.TestCase):
         self.assertRaises(TypeError, cr_flux.Spectrum, 1, self.E, self.e, self.e, self.F, self.e, self.e)
         self.assertRaises(TypeError, cr_flux.Spectrum, proton, self.E[1:], self.e, self.e, self.F, self.e, self.e)
         self.assertRaises(TypeError, cr_flux.Spectrum, proton, 1, self.e, self.e, self.F, self.e, self.e)
+        
+        spec1 = cr_flux.Spectrum(alpha, self.E, self.e, self.e)
+        spec2 = cr_flux.Spectrum(alpha, self.E, self.e, self.e, self.E*0, self.E*0, self.E*0)
+        self.assertEqual(True, numpy.all(spec1.F==spec2.F))
+        self.assertEqual(True, numpy.all(spec1.dFl==spec2.dFl))
+        self.assertEqual(True, numpy.all(spec1.dFh==spec2.dFh))
 
     def testAdd(self):
         """

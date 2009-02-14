@@ -1,6 +1,6 @@
 """
 Example of plotting gamma-ray flux from GMC
-$Id: gmc_plot.py,v 1.1 2009/02/12 18:14:48 oxon Exp $
+$Id: gmc_plot.py,v 1.2 2009/02/14 07:12:56 oxon Exp $
 """
 
 import cr_flux
@@ -16,7 +16,8 @@ Fp_galp = arc.galprop(cr_flux.proton, 8.5, 0.)
 
 # We calculate gamma-ray spectrum at the Earth
 # Assume GMC is concentrated at a point
-Fg = cr_flux.PointSourceSpectrum(cr_flux.Photon(), Fp_galp.E/100, Fp_galp.dEl/100, Fp_galp.dEh/100, Fp_galp.F*0, Fp_galp.dFl*0, Fp_galp.dFh*0)
+# Energy binning start from 100 times smaller value than GALPROP
+Fg = cr_flux.PointSourceSpectrum(cr_flux.Photon(), Fp_galp.E/100., Fp_galp.dEl/100., Fp_galp.dEh/100.)
 
 # Assume hevier particles do not exist
 # Use default cosmic-ray and ISM abundances that consist of only proton and hydrogen

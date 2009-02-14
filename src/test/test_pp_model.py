@@ -1,6 +1,6 @@
 """
 Unit test script for pp_model.py
-$Id: test_pp_model.py,v 1.1 2009/02/14 04:05:36 oxon Exp $
+$Id: test_pp_model.py,v 1.2 2009/02/14 07:12:58 oxon Exp $
 """
 
 import unittest
@@ -22,7 +22,7 @@ class TestKamae2006(unittest.TestCase):
     def testGamma(self):
         # CR = (p), ISM = (H)
         gas = cr_flux.GasDensity(self.cr_ab, self.ism_ab, 1)
-        Fg1 = cr_flux.AbsoluteSpectrum(cr_flux.Photon(), self.Fp.E/100., self.Fp.dEl/100., self.Fp.dEh/100., self.Fp.F*0., self.Fp.dFl*0., self.Fp.dFh*0.)
+        Fg1 = cr_flux.AbsoluteSpectrum(cr_flux.Photon(), self.Fp.E/100., self.Fp.dEl/100., self.Fp.dEh/100.)
         Fg1 = self.kamae.gamma(gas, self.Fp, Fg1)
         
         # CR = (p, alpha), ISM = (H)
@@ -34,7 +34,7 @@ class TestKamae2006(unittest.TestCase):
         Fg3 = self.kamae.gamma(gas, self.Fp, Fg1)
 
         # 0.05 times smaller flux for F_alpha
-        self.Fa = cr_flux.DiffuseSpectrum(cr_flux.alpha, self.Fp.E, self.Fp.dEl, self.Fp.dEh, self.Fp.F*0.05, self.Fp.dFl, self.Fp.dFh)
+        self.Fa = cr_flux.DiffuseSpectrum(cr_flux.alpha, self.Fp.E, self.Fp.dEl, self.Fp.dEh, self.Fp.F*0.05)
         Fg4 = self.kamae.gamma(gas, [self.Fp, self.Fa], Fg1)
         
         # CR = (p, alpha), ISM = (H, He), sigma_pa = 3

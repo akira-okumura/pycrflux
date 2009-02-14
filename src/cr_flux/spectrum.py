@@ -1,6 +1,6 @@
 """
 """
-#$Id: spectrum.py,v 1.1 2009/02/12 18:15:15 oxon Exp $
+#$Id: spectrum.py,v 1.2 2009/02/14 07:12:57 oxon Exp $
 
 import copy
 import decimal
@@ -15,7 +15,7 @@ class Spectrum(object):
     """
     Base class for energy spectra of particles. 
     """
-    def __init__(self, par, E, dEl, dEh, F, dFl, dFh):
+    def __init__(self, par, E, dEl, dEh, F=None, dFl=None, dFh=None):
         """
         par (Particle): Particle type
         E (numpy.ndarray): Kinetic energy [MeV] or [MeV/n]
@@ -25,24 +25,34 @@ class Spectrum(object):
         """
         if not isinstance(par, matter.Particle):
             raise TypeError, "par must be Particle class"
-        if not isinstance(E, numpy.ndarray) or \
-           not isinstance(F, numpy.ndarray) or \
-           not isinstance(dEl, numpy.ndarray) or \
-           not isinstance(dEh, numpy.ndarray) or \
-           not isinstance(dFl, numpy.ndarray) or \
-           not isinstance(dFh, numpy.ndarray): 
+        if not isinstance(E, numpy.ndarray) or\
+           not isinstance(dEl, numpy.ndarray) or\
+           not isinstance(dEh, numpy.ndarray) or\
+           not (isinstance(F, numpy.ndarray) or F == None) or\
+           not (isinstance(dFl, numpy.ndarray) or dFl == None) or\
+           not (isinstance(dFh, numpy.ndarray) or dFh == None): 
             raise TypeError, "numpy.ndarray must be given"
-        if not (E.size == F.size == dEl.size == dEh.size == dFl.size == dFh.size):
+        """
+        if not (E.size == dEl.size == dEh.size) or\
+           not ((F   != None) and F.size == E.size) or\
+           not ((dFl != None) and dFl.size == E.size) or\
+           not ((dFh != None) and dFh.size == E.size):
             raise TypeError, "The lengths of arrays are different"
+        """
+        if not (E.size == dEl.size == dEh.size) or\
+        ((F != None) and F.size != E.size) or\
+        ((dFl != None) and dFl.size != E.size) or\
+        ((dFh != None) and dFh.size != E.size):
+           raise TypeError, "The lengths of arrays are different" 
         
         self.par = copy.copy(par)
         self.E   = copy.copy(E)
         self.dEl = copy.copy(dEl)
         self.dEh = copy.copy(dEh)
-        self.F   = copy.copy(F)
-        self.dFl = copy.copy(dFl)
-        self.dFh = copy.copy(dFh)
-        
+        self.F = numpy.zeros(self.E.size) if F == None else copy.copy(F) 
+        self.dFl = numpy.zeros(self.E.size) if dFl == None else copy.copy(dFl) 
+        self.dFh = numpy.zeros(self.E.size) if dFh == None else copy.copy(dFh) 
+                
         # weight index for SED plot (i.e. idx == 2.0 means E^2 dN/dE)
         self.__idx = decimal.Decimal("2.0")
         self.init_graph()
@@ -165,8 +175,6 @@ class FluxModelArchive(object):
         dEh = E*Estep**0.5 - E
         dEl = E - E/Estep**0.5
         F   = numpy.zeros(head["NAXIS3"])
-        dFh = numpy.zeros(head["NAXIS3"])
-        dFl = numpy.zeros(head["NAXIS3"])
 
         dR = head["CDELT1"] # [kpc]
         dz = head["CDELT2"] # [kpc]
@@ -197,7 +205,7 @@ class FluxModelArchive(object):
                         
             F[i] = h2.Interpolate(R, z)/E[i]**2
 
-        spec = DiffuseSpectrum(par, E, dEl, dEh, F, dFl, dFh)
+        spec = DiffuseSpectrum(par, E, dEl, dEh, F)
         
         return spec
 
@@ -211,8 +219,6 @@ class FluxModelArchive(object):
             raise TypeError, "Size of E/dEl/dEh are different"
         
         F   = numpy.zeros(E.size)
-        dFh = numpy.zeros(E.size)
-        dFl = numpy.zeros(E.size)
 
         m = matter.proton.mass
         if par != matter.proton:
@@ -237,7 +243,7 @@ class FluxModelArchive(object):
                 
             F[i] *= 1e-3 # [/cm^2/s/sr/GeV] -> [/cm^2/s/sr/MeV]
 
-        spec = DiffuseSpectrum(par, E, dEl, dEh, F, dFl, dFh)
+        spec = DiffuseSpectrum(par, E, dEl, dEh, F)
                     
         return spec
         

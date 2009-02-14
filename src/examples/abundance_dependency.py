@@ -1,6 +1,6 @@
 """
 Example of plotting abundance dependency of gamma-ray emission
-$Id: abundance_dependency.py,v 1.2 2009/02/12 18:21:32 oxon Exp $
+$Id: abundance_dependency.py,v 1.3 2009/02/14 07:12:56 oxon Exp $
 """
 
 import cr_flux
@@ -54,7 +54,7 @@ multi4 = gaisser
 kamae4 = cr_flux.Kamae2006(multi4)
 gas4 = cr_flux.GasDensity(cr_ab4, ism_ab4, 1) # 1 [p/cm^3]
 
-Fg = cr_flux.AbsoluteSpectrum(cr_flux.Photon(), F1[0].E/100, F1[0].dEl/100, F1[0].dEh/100, F1[0].F*0, F1[0].dFl*0, F1[0].dFh*0)
+Fg = cr_flux.AbsoluteSpectrum(cr_flux.Photon(), F1[0].E/100, F1[0].dEl/100, F1[0].dEh/100)
 Fg1 = kamae1.gamma(gas1, F1, Fg)
 Fg2 = kamae2.gamma(gas2, F2, Fg)
 Fg3 = kamae3.gamma(gas3, F3, Fg)
