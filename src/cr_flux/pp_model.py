@@ -1,6 +1,6 @@
 """
 Define p-p interaction models.
-$Id: pp_model.py,v 1.1 2009/02/12 18:15:15 oxon Exp $
+$Id: pp_model.py,v 1.2 2009/02/14 04:05:10 oxon Exp $
 """
 
 import math
@@ -62,7 +62,7 @@ class Kamae2006(PPModel):
             raise TypeError, "gas must be a subclass of Gas"
 
         if not (isinstance(spec_cr, list) or isinstance(spec_cr, tuple)):
-            spec_cr = (spec_cr,)
+            spec_cr = [spec_cr,]
         
         gas.cr_ab.expand_flux_list(spec_cr)
         
