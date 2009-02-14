@@ -1,12 +1,12 @@
 """
 Setup script for PyCRFlux
-$Id: setup.py,v 1.4 2009/02/14 04:06:44 oxon Exp $
+$Id: setup.py,v 1.5 2009/02/14 07:11:27 oxon Exp $
 """
 
 from distutils.core import setup
 
 setup(name="PyCRFlux",
-      version="1.0.3",
+      version="1.0.4",
       description="Package for cosmic-ray flux calculation",
       author="Akira Okumura",
       author_email="oxon@ceres.phys.s.u-tokyo.ac.jp",
