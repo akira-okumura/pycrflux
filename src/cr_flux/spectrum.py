@@ -1,6 +1,6 @@
 """
 """
-#$Id: spectrum.py,v 1.2 2009/02/14 07:12:57 oxon Exp $
+#$Id: spectrum.py,v 1.3 2009/02/15 02:26:33 oxon Exp $
 
 import copy
 import decimal
@@ -43,7 +43,7 @@ class Spectrum(object):
         ((F != None) and F.size != E.size) or\
         ((dFl != None) and dFl.size != E.size) or\
         ((dFh != None) and dFh.size != E.size):
-           raise TypeError, "The lengths of arrays are different" 
+            raise TypeError, "The lengths of arrays are different" 
         
         self.par = copy.copy(par)
         self.E   = copy.copy(E)
@@ -55,6 +55,7 @@ class Spectrum(object):
                 
         # weight index for SED plot (i.e. idx == 2.0 means E^2 dN/dE)
         self.__idx = decimal.Decimal("2.0")
+        self.show_xerr = False
         self.init_graph()
         
     def __add__(self, other):
@@ -85,7 +86,10 @@ class Spectrum(object):
         enumerate(zip(self.E, self.dEl, self.dEh, self.F, self.dFl, self.dFh)):
             weight = E**float(self.__idx)
             self.graph.SetPoint(i, E, F*weight)
-            self.graph.SetPointError(i, 0, 0, dFl*weight, dFh*weight)
+            if self.show_xerr:
+                self.graph.SetPointError(i, dEl, dEh, dFl*weight, dFh*weight)
+            else:
+                self.graph.SetPointError(i, 0, 0, dFl*weight, dFh*weight)
         
         xax = self.graph.GetXaxis()
         yax = self.graph.GetYaxis()
@@ -383,6 +387,44 @@ class FluxModelArchive(object):
             val[2]*1e3, (val[2] - val[0])*1e3, (val[1] - val[2])*1e3,\
             val[3]*1e-7, (val[4]**2 + val[5]**2)**0.5*1e-7
             dFh[i] = dFl[i]
+            
+        spec = DiffuseSpectrum(par, E, dEl, dEh, F, dFl, dFh)
+                    
+        return spec
+
+    def RUNJOB(self, par):
+        """
+        Create spectra of proton and alpha from RUNJOB result.
+        A.V. Apanasenko et al. Astroparticle Physics 16 (2001) 13-46
+        """
+        if par == matter.proton:
+            fname = pkg_resources.resource_filename("cr_flux", "data/runjob/apanasenko2001_proton.dat")
+        elif par == matter.alpha:
+            fname = pkg_resources.resource_filename("cr_flux", "data/runjob/apanasenko2001_alpha.dat")
+        else:
+            raise TypeError, "Invalid particle type"
+        
+        f = open(fname)
+        lines = f.readlines()[1:] # skip the header
+        E   = numpy.zeros(len(lines))
+        dEh = numpy.zeros(len(lines))
+        dEl = numpy.zeros(len(lines))
+        F   = numpy.zeros(len(lines))
+        dFh = numpy.zeros(len(lines))
+        dFl = numpy.zeros(len(lines))
+        
+        for i, line in enumerate(lines):
+            val = [float(x) for x in line.split()]
+            # [GeV/n] -> [MeV/n] (x 1e3)
+            # [/mass^2/sr/s/(GeV/n)] -> [/cm^2/sr/s/(MeV/n)] (x 1e-7)
+            E1 = 1e3*val[0]*10**val[2]
+            E2 = 1e3*val[1]*10**val[2]
+            E[i] = (E1*E2)**0.5
+            dEl[i] = E[i] - E1
+            dEh[i] = E2 - E[i]
+            F[i] = val[3]*1e-7*10**val[6]
+            dFh[i] = val[4]*1e-7*10**val[6]
+            dFl[i] = -val[5]*1e-7*10**val[6]
             
         spec = DiffuseSpectrum(par, E, dEl, dEh, F, dFl, dFh)
                     
