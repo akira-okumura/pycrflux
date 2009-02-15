@@ -1,6 +1,6 @@
 """
 Definition of particles and interstellar medium
-$Id: matter.py,v 1.1 2009/02/12 18:08:17 oxon Exp $
+$Id: matter.py,v 1.2 2009/02/15 14:37:42 oxon Exp $
 """
 
 import pkg_resources
@@ -12,13 +12,7 @@ class Particle(object):
     Base class for particles
     """
     def __init__(self):
-        pass
-
-    def __cmp__(self, other):
-        return 0
-
-    def __hash__(self):
-        return 0
+        raise NotImplementedError
 
 class ChargedLepton(Particle):
     """
