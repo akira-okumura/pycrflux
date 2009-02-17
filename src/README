@@ -1,0 +1,65 @@
+$Id: README,v 1.1 2009/02/17 14:05:27 oxon Exp $
+PyCRFlux is a python package that has some useful utilities to plot CR fluxes
+and calculate diffuse gamma-ray flux.
+
+=== Developers ===
+
+- Akira Okumura oxon@ceres.phys.s.u-tokyo.ac.jp
+
+=== Requirements ===
+
+- Python 2.5 (other version is not tested)
+  http://www.python.org/
+- ROOT and PyROOT (tested with only version 5.22.00)
+  http://root.cern.ch/
+- numpy
+  http://numpy.scipy.org/
+- pyfits
+  http://www.stsci.edu/resources/software_hardware/pyfits
+- cparamlib 2.1.0 and modified ParamModel.py
+  http://www.slac.stanford.edu/~niklas/cparamlib/index.html
+- FORTRAN compiler g77/gfortran/ifort etc.
+
+=== Getting Started ===
+
+- Installation
+$ tar zxvf PyCRFlux-x.y.z.tar.gz
+$ cd PyCRFlux-x.y.z
+$ python setup.py install
+
+- Test
+Run the scripts in "test" directory
+
+- Write Your Code
+See the scripts in "examples" directory
+
+=== References ===
+
+- Pi0 decay model
+T. Kamae, et al., ApJ 647 (2006) 692-708
+T. Kamae, et al., ApJ 662 (2007) 779
+M. Mori, ApJ 478 (1997) 225-232
+G.D. Badhwar, S.A. Stephens & R.L. Golden, Phys. Rev. D 15 (1977) 820
+C. Dermer, A&A 157 (1986) 223
+C. Dermer, ApJ 307 (1986) 47
+I. Moskalenko & A. Strong, ApJ 493 (1998) 694
+F. Stecker, Astrophys. Spa. Sci. 6 (1970) 377
+S.A. Stephens & G.D. Badhwar, Astrophys. Spa. Sci. 76 (1981) 213
+T.K. Gaisser & R.K. Schaefer, ApJ 394 (1992) 174-183
+ 
+- AMS
+J. Alcaraz, et al., Phys. Lett. B 490 (2000) 27-35
+J. Alcaraz, et al., Phys. Lett. B 494 (2000) 193-202
+
+- ATIC
+A.D. Panov, et al., Bull. Russ. Acad. Sci. Phys. 71 (2007) 494-497 
+Private communication with Dr. Panov
+
+- BESS-TeV
+S. Haino, et al., Phys. Lett. B 594 (2004) 35-46        
+
+- RUNJOB
+A.V. Apanasenko et al. Astroparticle Physics 16 (2001) 13-46
+
+=== Acknowledgement ===
+I thank to all scientists who kindly had fruitful discussion with me. 
