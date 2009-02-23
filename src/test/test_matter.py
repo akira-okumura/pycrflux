@@ -1,6 +1,6 @@
 """
 Unit test script for matter.py
-$Id: test_matter.py,v 1.1 2009/02/12 18:12:35 oxon Exp $
+$Id: test_matter.py,v 1.2 2009/02/23 16:41:23 oxon Exp $
 """
 
 import numpy
@@ -13,16 +13,8 @@ class TestParticle(unittest.TestCase):
     Unit test for class Particle
     """
     def setUp(self):
-        self.p1 = cr_flux.Particle()
-        self.p2 = cr_flux.Particle()
-        
-    def testCmp(self):
-        self.assertEqual(self.p1, self.p2)
-        
-    def testHash(self):
-        dic = {}
-        dic[self.p1] = 1
-        self.assertEqual(dic[self.p2], 1)
+        """
+        """
 
 class TestChargedLepton(unittest.TestCase):        
     """
