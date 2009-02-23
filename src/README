@@ -1,4 +1,4 @@
-$Id: README,v 1.1 2009/02/17 14:05:27 oxon Exp $
+$Id: README,v 1.2 2009/02/23 16:05:01 oxon Exp $
 PyCRFlux is a python package that has some useful utilities to plot CR fluxes
 and calculate diffuse gamma-ray flux.
 
@@ -10,6 +10,8 @@ and calculate diffuse gamma-ray flux.
 
 - Python 2.5 (other version is not tested)
   http://www.python.org/
+- setuptools
+  http://pypi.python.org/pypi/setuptools
 - ROOT and PyROOT (tested with only version 5.22.00)
   http://root.cern.ch/
 - numpy
