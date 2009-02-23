@@ -1,6 +1,6 @@
 """
 Definition of particles and interstellar medium
-$Id: matter.py,v 1.2 2009/02/15 14:37:42 oxon Exp $
+$Id: matter.py,v 1.3 2009/02/23 15:55:14 oxon Exp $
 """
 
 import pkg_resources
@@ -86,6 +86,9 @@ class Photon(Particle):
     """
     def __init__(self):
         self.mass = 0.
+        
+    def __cmp__(self, dummy):
+        return 0
     
     def __hash__(self):
         return 5
@@ -135,12 +138,13 @@ class CRAbundance(object):
             try:
                 par_list.index(par)
             except ValueError:
-                norm = self.cr_abundance(par)/self.cr_abundance(base_spec.par)
-                spec = spectrum.DiffuseSpectrum(par, base_spec.E, base_spec.dEl,
-                                                base_spec.dEh, base_spec.F*norm,
-                                                base_spec.dFl*norm,
-                                                base_spec.dFh*norm)
-                f_list.append(spec)
+                if self.cr_abundance(base_spec.par) != 0:
+                    norm = self.cr_abundance(par)/self.cr_abundance(base_spec.par)
+                    spec = spectrum.DiffuseSpectrum(par, base_spec.E, base_spec.dEl,
+                                                    base_spec.dEh, base_spec.F*norm,
+                                                    base_spec.dFl*norm,
+                                                    base_spec.dFh*norm)
+                    f_list.append(spec)
 
 class ISMAbundance(object):
     """
