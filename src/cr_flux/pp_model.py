@@ -1,6 +1,6 @@
 """
 Define p-p interaction models.
-$Id: pp_model.py,v 1.2 2009/02/14 04:05:10 oxon Exp $
+$Id: pp_model.py,v 1.3 2009/02/23 15:52:18 oxon Exp $
 """
 
 import math
@@ -8,6 +8,7 @@ import numpy
 from cparamlib import ParamModel
 
 import matter
+import pp_meson
 import spectrum
 
 class PPModel(object):
@@ -19,37 +20,6 @@ class PPModel(object):
         mul: Multiplicity
         """
         self.mul = mul
-    
-    def gamma(self, gas, spec_cr, Fg):
-        """
-        Pure virtual method
-        """
-        raise NotImplementedError
-    
-class Kamae2006(PPModel):
-    """
-    T. Kamae, et al., The Astrophysical Journal 647 (2006) 692-708
-    """
-    def sigma_gamma(self, Eg, Tp):
-        """
-        Calculate inclusive cross section of gamma rays in unit of [mb/MeV]
-
-        Eg: An array of energies of gamma rays in unit of [MeV]
-        Tp: An array of kinetic energies of protons in unit of [MeV]
-        """
-        sigma = numpy.zeros([Eg.size, Tp.size])
-
-        for iT in range(Tp.size):
-            model = ParamModel.ParamModel(Tp[iT]/1e3) # [MeV] to [GeV]
-            for iE in range(Eg.size):
-                # Differntial inclusive cross section
-                # sigma(Tp)dN/dEg = sigma(Tp)dN/dln(Eg)/Eg [mb/GeV]
-                sigma[iE, iT] = model.sigma_incl_tot(Eg[iE]/1e3, Tp[iT]/1e3)\
-                                                     /(Eg[iE]/1e3)
-        # [mb/GeV] => [mb/MeV]
-        sigma /= 1e3
-        
-        return sigma
 
     def gamma(self, gas, spec_cr, Fg):
         """
@@ -71,15 +41,14 @@ class Kamae2006(PPModel):
         
         for spec in spec_cr:
             par_cr = spec.par
-            sigma = self.sigma_gamma(Fg.E, spec.E)
-            for iT in range(spec.E.size):
-                dTp = spec.dEh[iT] + spec.dEl[iT]
-                dNp = 4*math.pi*spec.F[iT]*dTp # [/s/sr/cm^2/(MeV/n)] => [/s/cm^2]
-                dF = sigma[:, iT]*dNp*1e-27 # [/s/MeV]
-
-                for par_gas in gas.ism_ab.abtable.keys():
+            for par_gas in gas.ism_ab.abtable.keys():
+                sigma = self.sigma_gamma(par_cr, par_gas, Fg.E, spec.E)
+                for iT in range(spec.E.size):
+                    dTp = spec.dEh[iT] + spec.dEl[iT]
+                    dNp = 4*math.pi*spec.F[iT]*dTp # [/s/sr/cm^2/(MeV/n)] => [/s/cm^2]
+                    dF = sigma[:, iT]*dNp*1e-27 # [/s/MeV]
                     ism_ab = gas.ism_ab.ism_abundance(par_gas)
-                    F += dF*self.mul.multiplicity(par_cr, par_gas)*ism_ab
+                    F += dF*ism_ab
         
         if isinstance(gas, matter.GasDensity):
             if isinstance(Fg, spectrum.AbsoluteSpectrum):
@@ -106,7 +75,91 @@ class Kamae2006(PPModel):
                 raise TypeError, "Cannot calculate combination of GasDensity and %s" % Fg.__class__
 
         return Fg.__class__(Fg.par, Fg.E, Fg.dEl, Fg.dEh, F*factor, zero, zero)
-    
+        
+class Kamae2006(PPModel):
+    """
+    T. Kamae, et al., The Astrophysical Journal 647 (2006) 692-708
+    """
+    def __init__(self, mul):
+        PPModel.__init__(self, mul)
+        self._sigma = None
+        self._Eg    = numpy.zeros(0)
+        self._Tp    = numpy.zeros(0)
+        
+    def sigma_gamma(self, par1, par2, Eg, Tp):
+        """
+        Calculate inclusive cross section of gamma rays in unit of [mb/MeV]
+
+        par1: particle type 1
+        par2: particle type 2
+        Eg: An array of energies of gamma rays in unit of [MeV]
+        Tp: An array of kinetic energies of protons in unit of [MeV]
+        """
+        if (self._sigma != None) and\
+        (self._Eg.size == Eg.size) and numpy.all(self._Eg == Eg) and\
+        (self._Tp.size == Tp.size) and numpy.all(self._Tp == Tp):
+            # Return pre-calculated table to reduce CPU load
+            return self._sigma*self.mul.multiplicity(par1, par2)
+        
+        self._sigma = numpy.zeros([Eg.size, Tp.size])
+        self._Eg = numpy.copy(Eg)
+        self._Tp = numpy.copy(Tp)
+
+        for iT in range(Tp.size):
+            model = ParamModel.ParamModel(Tp[iT]/1e3) # [MeV] to [GeV]
+            for iE in range(Eg.size):
+                # Differntial inclusive cross section
+                # sigma(Tp)dN/dEg = sigma(Tp)dN/dln(Eg)/Eg [mb/GeV]
+                self._sigma[iE, iT] = model.sigma_incl_tot(Eg[iE]/1e3, Tp[iT]/1e3)/(Eg[iE]/1e3)
+        
+        # [mb/GeV] => [mb/MeV]
+        self._sigma /= 1e3
+
+        return self._sigma*self.mul.multiplicity(par1, par2)
+
+class Dermer1986(PPModel):
+    """
+    Based on pp_meson.f in GALPROP
+    [1] Badhwar, Stephens, & Golden 1977, Phys. Rev. D 15, 820
+    [2] Dermer 1986, A&A 157, 223;  ApJ 307, 47
+    [3] Mori 1997, ApJ 478, 225
+    [4] Moskalenko & Strong 1998, ApJ 493, 694
+    [5] Stecker 1970, Astrophys. Spa. Sci. 6, 377
+    [6] Stephens & Badhwar 1981, Astrophys. Spa. Sci. 76, 213
+    """
+    def __init__(self, mul):
+        PPModel.__init__(self, mul)
+        self._sigma = {}
+        self.key1 = 0
+        
+    def sigma_gamma(self, par1, par2, Eg, Tp):
+        """
+        Calculate inclusive cross section of gamma rays in unit of [mb/MeV]
+
+        par1: particle type 1
+        par2: particle type 2
+        Eg: An array of energies of gamma rays in unit of [MeV]
+        Tp: An array of kinetic energies of protons in unit of [MeV]
+        """
+  
+        sigma = numpy.zeros([Eg.size, Tp.size])
+
+        for iT in range(Tp.size):
+            for iE in range(Eg.size):
+                # Differntial inclusive cross section
+                # sigma(Tp)dN/dEg = sigma(Tp)dN/dln(Eg)/Eg [mb/GeV]
+                Esec = Eg[iE]/1e3
+                T_tot = Tp[iT]*par1.A/1e3 # [GeV]
+                Pp1 = (T_tot**2 + 2*par1.mass/1e3*T_tot)**0.5 # [GeV/c/nucleUS]
+                NA1 = par1.A
+                NA2 = par2.A
+                sigma[iE, iT] = pp_meson.pp_meson(Esec, Pp1, NA1, NA2, self.key1)
+
+        # [b/GeV] => [mb/MeV]
+        # do nothing
+        
+        return sigma
+            
 class Mori1997(PPModel):
     """
     M. Mori, The Astrophysical Journal 478 (1997) 225-232
