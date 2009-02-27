@@ -2,6 +2,7 @@ setup.py
 recursive-include cr_flux *.py
 recursive-include cr_flux/data *.dat
 recursive-include cr_flux/data *.gz
+recursive-include cr_flux/data/mori */gamma*
 recursive-include test *.py
 recursive-include examples *.py
 recursive-include ext *.f

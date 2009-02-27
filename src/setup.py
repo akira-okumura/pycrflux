@@ -1,6 +1,6 @@
 """
 Setup script for PyCRFlux
-$Id: setup.py,v 1.6 2009/02/23 16:22:14 oxon Exp $
+$Id: setup.py,v 1.7 2009/02/27 16:10:45 oxon Exp $
 """
 
 from numpy.distutils.core import Extension, setup
@@ -13,6 +13,6 @@ setup(name="PyCRFlux",
       author="Akira Okumura",
       author_email="oxon@ceres.phys.s.u-tokyo.ac.jp",
       packages=["cr_flux"],
-      package_data={"cr_flux": ["data/*/*.dat", "data/*/*.gz"]},
+      package_data={"cr_flux": ["data/*/*.dat", "data/*/*.gz", "data/mori/*/gamma*"]},
       ext_modules = [ext,]
       )
