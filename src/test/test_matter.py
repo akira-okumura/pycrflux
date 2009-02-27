@@ -1,6 +1,6 @@
 """
 Unit test script for matter.py
-$Id: test_matter.py,v 1.2 2009/02/23 16:41:23 oxon Exp $
+$Id: test_matter.py,v 1.3 2009/02/27 16:52:58 oxon Exp $
 """
 
 import numpy
@@ -55,10 +55,10 @@ class TestNucleus(unittest.TestCase):
         """
         Test for __init__
         """
-        self.assertRaises(TypeError, cr_flux.Nucleus, 0, 0)
-        self.assertRaises(TypeError, cr_flux.Nucleus, 4, 5)
-        self.assertRaises(TypeError, cr_flux.Nucleus, 1, -2)
-        self.assertRaises(TypeError, cr_flux.Nucleus, 2, 0)
+        self.assertRaises(ValueError, cr_flux.Nucleus, 0, 0)
+        self.assertRaises(ValueError, cr_flux.Nucleus, 4, 5)
+        self.assertRaises(ValueError, cr_flux.Nucleus, 1, -2)
+        self.assertRaises(ValueError, cr_flux.Nucleus, 2, 0)
         
         self.assertEqual(self.p.A, 1)
         self.assertEqual(self.p.Z, 1)
