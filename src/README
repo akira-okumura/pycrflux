@@ -1,4 +1,4 @@
-$Id: README,v 1.2 2009/02/23 16:05:01 oxon Exp $
+$Id: README,v 1.3 2009/02/27 16:09:42 oxon Exp $
 PyCRFlux is a python package that has some useful utilities to plot CR fluxes
 and calculate diffuse gamma-ray flux.
 
@@ -64,4 +64,9 @@ S. Haino, et al., Phys. Lett. B 594 (2004) 35-46
 A.V. Apanasenko et al. Astroparticle Physics 16 (2001) 13-46
 
 === Acknowledgement ===
-I thank to all scientists who kindly had fruitful discussion with me. 
+I thank to all scientists who kindly had fruitful discussion with me.
+
+Function pp_meson.pp_meson and class Mori1997 are based on other programs;
+- GALPROP v50.1p developed by A. Strong and I. Moskalenko
+- gamspec1 developed by M. Mori
+I really appreciate their help and permissions to include their codes.
