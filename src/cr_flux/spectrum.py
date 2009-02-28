@@ -1,6 +1,6 @@
 """
 """
-#$Id: spectrum.py,v 1.3 2009/02/15 02:26:33 oxon Exp $
+#$Id: spectrum.py,v 1.4 2009/02/28 02:14:50 oxon Exp $
 
 import copy
 import decimal
@@ -189,6 +189,7 @@ class FluxModelArchive(object):
         
         h2 = ROOT.TH2D("", "", nR, R0 - 0.5*dR, R0 + (nR - 0.5)*dR,\
                        nz, z0 - 0.5*dz, z0 + (nz - 0.5)*dz)
+        h2.SetDirectory(0)
 
         if R < R0 or R > R0 + dR*(nR - 1):
             raise ValueError, "R is out of range"
