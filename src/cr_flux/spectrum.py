@@ -1,6 +1,6 @@
 """
 """
-#$Id: spectrum.py,v 1.4 2009/02/28 02:14:50 oxon Exp $
+#$Id: spectrum.py,v 1.5 2009/02/28 04:32:33 oxon Exp $
 
 import copy
 import decimal
@@ -278,7 +278,7 @@ class FluxModelArchive(object):
             for i, line in enumerate(lines):
                 val = [float(x) for x in line.split()]
                 # [GeV] -> [MeV/n] (x 1e3)
-                # [/mass^2/sr/s/GeV] -> [/cm^2/sr/s/(MeV/n)] (x 1e-7)
+                # [/m^2/sr/s/GeV] -> [/cm^2/sr/s/(MeV/n)] (x 1e-7)
                 E[i]   = val[2]*1e3
                 dEl[i] = E[i] - val[0]*1e3
                 dEh[i] = val[1]*1e3 - E[i]
@@ -288,7 +288,7 @@ class FluxModelArchive(object):
             for i, line in enumerate(lines):
                 val = [float(x) for x in line.split()]
                 # [GeV] -> [MeV/n] (x 1e3 / A)
-                # [/mass^2/s/sr/GeV] -> [/cm^2/sr/s/(MeV/n)] (x A x 1e-7)
+                # [/m^2/s/sr/GeV] -> [/cm^2/sr/s/(MeV/n)] (x A x 1e-7)
                 E[i] = val[2]*1e3/par.A # [GeV] -> [MeV/n]
                 dEl[i] = E[i] - val[0]*1e3/par.A
                 dEh[i] = val[1]*1e3/par.A - E[i]
@@ -309,6 +309,8 @@ class FluxModelArchive(object):
             fname = pkg_resources.resource_filename("cr_flux", "data/ams/alcaraz2000_proton.dat")
         elif par == matter.alpha:
             fname = pkg_resources.resource_filename("cr_flux", "data/ams/alcaraz2000_alpha.dat")
+        elif par == matter.deutron:
+            fname = pkg_resources.resource_filename("cr_flux", "data/ams/aguilar2002_deutron.dat")
         else:
             raise TypeError, "Invalid particle type"
 
@@ -325,7 +327,7 @@ class FluxModelArchive(object):
             for i, line in enumerate(lines):
                 val = [float(x) for x in line.split()]
                 # [GeV] -> [MeV/n] (x 1e3)
-                # [/mass^2/sr/s/(MeV/n)] -> [/cm^2/sr/s/(MeV/n)] (x 1e-4)
+                # [/m^2/sr/s/(MeV/n)] -> [/cm^2/sr/s/(MeV/n)] (x 1e-4)
                 val[0] *= 1e3 # [GeV] -> [MeV]
                 val[1] *= 1e3 # [GeV] -> [MeV]
                 E[i]   = (val[1] + val[0])/2.
@@ -337,7 +339,7 @@ class FluxModelArchive(object):
             for i, line in enumerate(lines):
                 val = [float(x) for x in line.split()]
                 # [GV] -> [MeV/n] (x Z / A x 1e3)
-                # [/mass^2/s/sr/GV] -> [/cm^2/sr/s/(MeV/n)] (x A / Z x 1e-7)
+                # [/m^2/s/sr/GV] -> [/cm^2/sr/s/(MeV/n)] (x A / Z x 1e-7)
                 A, Z, m = float(par.A), float(par.Z), par.mass
                 R1, R2 = val[0], val[1]
                 dNdR = val[2] # dN/dR
@@ -352,9 +354,21 @@ class FluxModelArchive(object):
                 E[i]   = (E1 + E2)/2.
                 dEl[i] = E[i] - E1
                 dEh[i] = E2 - E[i]
-                F[i]   = dNdE*1e-4 # [mass^2] -> [cm^2]
+                F[i]   = dNdE*1e-4 # [m^2] -> [cm^2]
                 dFl[i] = dFh[i] = ddNdE*1e-4
-            
+        elif par == matter.deutron:
+            for i, line in enumerate(lines):
+                val = [float(x) for x in line.split()]
+                # [GeV/n] -> [MeV/n] (x 1e3)
+                # [/m^2/sr/s/(MeV/n)] -> [/cm^2/sr/s/(MeV/n)] (x 1e-4)
+                val[0] *= 1e3 # [GeV/n] -> [MeV/n]
+                val[1] *= 1e3 # [GeV/n] -> [MeV/n]
+                E[i]   = (val[1] + val[0])/2.
+                dEl[i] = E[i] - val[0]
+                dEh[i] = val[1] - E[i]
+                F[i]   = val[2]*val[5]*1e-4 # [/cm^2/sr/s/(MeV/n)]
+                dFl[i] = dFh[i] = (val[3]**2 + val[4]**2)**0.5*val[5]*1e-4
+
         spec = DiffuseSpectrum(par, E, dEl, dEh, F, dFl, dFh)
                     
         return spec
