@@ -1,6 +1,6 @@
 """
 Definition of particles and interstellar medium
-$Id: matter.py,v 1.4 2009/02/28 02:10:22 oxon Exp $
+$Id: matter.py,v 1.5 2009/02/28 04:31:53 oxon Exp $
 """
 
 import pkg_resources
@@ -295,5 +295,6 @@ class Cloud(Gas):
         self.dist = dist
 
 proton = Nucleus(1, 1)
+deutron = Nucleus(2, 1)
 alpha = Nucleus(4, 2)
 gaisser_table = GaisserTable()
