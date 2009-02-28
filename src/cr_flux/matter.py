@@ -1,6 +1,6 @@
 """
 Definition of particles and interstellar medium
-$Id: matter.py,v 1.3 2009/02/23 15:55:14 oxon Exp $
+$Id: matter.py,v 1.4 2009/02/28 02:10:22 oxon Exp $
 """
 
 import pkg_resources
@@ -27,9 +27,9 @@ class ChargedLepton(Particle):
              anti-tauon = (+1, 2)             
         """
         if not (charge == -1 or charge == 1):
-            raise TypeError, "Charge must be +1, 0 or -1"
+            raise ValueError, "Charge must be +1, 0 or -1"
         if not (generation == 0 or generation == 1 or generation == 2):
-            raise TypeError, "Generation must be 0, 1 or 2"
+            raise ValueError, "Generation must be 0, 1 or 2"
         
         self.charge = charge
         self.generation = generation
@@ -59,11 +59,11 @@ class Nucleus(Particle):
              alpha       Nucleus(4, 2)
         """
         if A < 1:
-            raise TypeError, "Mass number must be greater than zero"
+            raise ValueError, "Mass number must be greater than zero"
         if Z == 0 and A != 1:
-            raise TypeError, "Only neutron can be used as non-charged"
+            raise ValueError, "Only neutron can be used as non-charged"
         if A < abs(Z):
-            raise TypeError, "A must be greater than or equals to Z"
+            raise ValueError, "A must be greater than or equals to Z"
         
         self.A = A
         self.Z = Z
