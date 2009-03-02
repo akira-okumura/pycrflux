@@ -1,6 +1,6 @@
 """
 """
-#$Id: spectrum.py,v 1.6 2009/03/02 14:15:58 oxon Exp $
+#$Id: spectrum.py,v 1.7 2009/03/02 16:28:38 oxon Exp $
 
 import copy
 import decimal
@@ -420,6 +420,39 @@ class FluxModelArchive(object):
             val[2]*1e3, (val[2] - val[0])*1e3, (val[1] - val[2])*1e3,\
             val[3]*1e-7, (val[4]**2 + val[5]**2)**0.5*1e-7
             dFh[i] = dFl[i]
+            
+        spec = DiffuseSpectrum(par, E, dEl, dEh, F, dFl, dFh)
+                    
+        return spec
+
+    def HEAT(self, par):
+        """
+        Create spectra from HEAT result.
+        S. W. Barwick, et al., The Astrophysical Journal 498 (1998) 779-789
+        """
+        if par == matter.electron:
+            fname = pkg_resources.resource_filename("cr_flux", "data/heat/barwick1998_electron.dat")
+        elif par == matter.positron:
+            fname = pkg_resources.resource_filename("cr_flux", "data/heat/barwick1998_positron.dat")
+        else:
+            raise TypeError, "Invalid particle type"
+        
+        f = open(fname)
+        lines = f.readlines()[1:] # skip the header
+        E   = numpy.zeros(len(lines))
+        dEh = numpy.zeros(len(lines))
+        dEl = numpy.zeros(len(lines))
+        F   = numpy.zeros(len(lines))
+        dFh = numpy.zeros(len(lines))
+        dFl = numpy.zeros(len(lines))
+        
+        for i, line in enumerate(lines):
+            val = [float(x) for x in line.split()]
+            # [GeV/n] -> [MeV/n] (x 1e3)
+            # [/mass^2/sr/s/(GeV/n)] -> [/cm^2/sr/s/(MeV/n)] (x 1e-7)
+            E[i], dEl[i], dEh[i], F[i], dFh[i], dFl[i] =\
+            val[2]*1e3, (val[2] - val[0])*1e3, (val[1] - val[2])*1e3,\
+            val[3]*1e-7, val[4]*1e-7, val[5]*1e-7
             
         spec = DiffuseSpectrum(par, E, dEl, dEh, F, dFl, dFh)
                     
