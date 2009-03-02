@@ -1,6 +1,6 @@
 """
 """
-#$Id: spectrum.py,v 1.5 2009/02/28 04:32:33 oxon Exp $
+#$Id: spectrum.py,v 1.6 2009/03/02 14:15:58 oxon Exp $
 
 import copy
 import decimal
@@ -304,6 +304,8 @@ class FluxModelArchive(object):
         Create spectra of proton and alpha from AMS result.
         J. Alcaraz, et al., Physics Letters B 490 (2000) 27-35
         J. Alcaraz, et al., Physics Letters B 494 (2000) 193-202
+        J. Alcaraz, et al., Physics Letters B 484 (2000) 10Ð22 
+        M. Aguilar, et al., Physics Reports 366 (2002) 331Ð405
         """
         if par == matter.proton:
             fname = pkg_resources.resource_filename("cr_flux", "data/ams/alcaraz2000_proton.dat")
@@ -311,6 +313,10 @@ class FluxModelArchive(object):
             fname = pkg_resources.resource_filename("cr_flux", "data/ams/alcaraz2000_alpha.dat")
         elif par == matter.deutron:
             fname = pkg_resources.resource_filename("cr_flux", "data/ams/aguilar2002_deutron.dat")
+        elif par == matter.electron:
+            fname = pkg_resources.resource_filename("cr_flux", "data/ams/alcaraz2000_electron.dat")
+        elif par == matter.positron:
+            fname = pkg_resources.resource_filename("cr_flux", "data/ams/alcaraz2000_positron.dat")
         else:
             raise TypeError, "Invalid particle type"
 
@@ -330,7 +336,7 @@ class FluxModelArchive(object):
                 # [/m^2/sr/s/(MeV/n)] -> [/cm^2/sr/s/(MeV/n)] (x 1e-4)
                 val[0] *= 1e3 # [GeV] -> [MeV]
                 val[1] *= 1e3 # [GeV] -> [MeV]
-                E[i]   = (val[1] + val[0])/2.
+                E[i]   = (val[1] * val[0])**0.5
                 dEl[i] = E[i] - val[0]
                 dEh[i] = val[1] - E[i]
                 F[i]   = val[2]*val[7]*1e-4
@@ -351,7 +357,7 @@ class FluxModelArchive(object):
                 dE = E2 - E1
                 dNdE = dN/dE
                 ddNdE = ddN/dE
-                E[i]   = (E1 + E2)/2.
+                E[i]   = (E1 * E2)**0.5
                 dEl[i] = E[i] - E1
                 dEh[i] = E2 - E[i]
                 F[i]   = dNdE*1e-4 # [m^2] -> [cm^2]
@@ -363,12 +369,24 @@ class FluxModelArchive(object):
                 # [/m^2/sr/s/(MeV/n)] -> [/cm^2/sr/s/(MeV/n)] (x 1e-4)
                 val[0] *= 1e3 # [GeV/n] -> [MeV/n]
                 val[1] *= 1e3 # [GeV/n] -> [MeV/n]
-                E[i]   = (val[1] + val[0])/2.
+                E[i]   = (val[1] * val[0])**0.5
                 dEl[i] = E[i] - val[0]
                 dEh[i] = val[1] - E[i]
                 F[i]   = val[2]*val[5]*1e-4 # [/cm^2/sr/s/(MeV/n)]
                 dFl[i] = dFh[i] = (val[3]**2 + val[4]**2)**0.5*val[5]*1e-4
-
+        elif par == matter.electron or par == matter.positron:
+            for i, line in enumerate(lines):
+                val = [float(x) for x in line.split()]
+                # [GeV/n] -> [MeV/n] (x 1e3)
+                # [/m^2/sr/s/(GeV/n)] -> [/cm^2/sr/s/(MeV/n)] (x 1e-7)
+                val[0] *= 1e3 # [GeV/n] -> [MeV/n]
+                val[1] *= 1e3 # [GeV/n] -> [MeV/n]
+                E[i]   = (val[1] * val[0])**0.5
+                dEl[i] = E[i] - val[0]
+                dEh[i] = val[1] - E[i]
+                F[i]   = val[2]*1e-7 # [/cm^2/sr/s/(MeV/n)]
+                dFl[i] = dFh[i] = val[3]*1e-7
+        
         spec = DiffuseSpectrum(par, E, dEl, dEh, F, dFl, dFh)
                     
         return spec
