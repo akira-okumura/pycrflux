@@ -1,6 +1,6 @@
 """
 """
-#$Id: spectrum.py,v 1.7 2009/03/02 16:28:38 oxon Exp $
+#$Id: spectrum.py,v 1.8 2009/03/02 16:44:24 oxon Exp $
 
 import copy
 import decimal
@@ -155,23 +155,28 @@ class FluxModelArchive(object):
 
         fname = pkg_resources.resource_filename("cr_flux", "data/galprop/nuclei_full_54_59Xvarh7S.gz")
 
-        if not isinstance(par, matter.Nucleus):
-            raise TypeError, "Invalid particle type" 
-        elif par.A == 1 and par.Z == 1: # H
+        if par == matter.proton: # H
             pid = 3
-        elif par.A == 2 and par.Z == 1: # D
+        elif par == matter.deutron: # D
             pid = 4
-        elif par.A == 3 and par.Z == 2: # 3He
+        elif par == matter.Nucleus(3, 2): # 3He
             pid = 5
-        elif par.A == 4 and par.Z == 2: # He
+        elif par == matter.alpha: # He
             pid = 6
+        elif par == matter.positron:
+            pid = 0
+        elif par == matter.electron:
+            pass
         else:
             raise TypeError, "Invalid particle type" 
         
         hdulist = pyfits.open(fname)
         hdu = hdulist[0]
         head = hdu.header
-        data = hdu.data[pid]
+        if par == matter.electron:
+            data = hdu.data[1] + hdu.data[2]
+        else:
+            data = hdu.data[pid]
         
         E0 = 10**head["CRVAL3"] # [MeV]
         Estep = 10**head["CDELT3"]
