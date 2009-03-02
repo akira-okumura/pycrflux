@@ -1,6 +1,6 @@
 """
 Definition of particles and interstellar medium
-$Id: matter.py,v 1.7 2009/03/02 14:17:38 oxon Exp $
+$Id: matter.py,v 1.8 2009/03/02 14:56:17 oxon Exp $
 """
 
 import pkg_resources
@@ -251,6 +251,22 @@ class GaisserTable(CRAbundance, Multiplicity):
             self.add_mul(Nucleus(1, 1), Nucleus(A, Z), float(val[5]))
             self.add_mul(Nucleus(4, 2), Nucleus(A, Z), float(val[7]))
 
+class OrthBuffington(Multiplicity):
+    """
+    C. D. Orth and A. Buffington, The Astrophysical Journal (1976) 206, 312-332
+    """
+    def __init__(self):
+        Multiplicity.__init__(self)
+
+    def multiplicity(self, par1, par2):
+        """
+        par1: Type of particle in collision
+        par2: Type of particle in collision
+        (par1, par2) and (par2, par1) are the same meaning.
+        """
+        
+        return (par1.A**(3./8.) + par2.A**(3./8.) - 1)**2
+                    
 class Gas(object):
     """
     Base class for gas
