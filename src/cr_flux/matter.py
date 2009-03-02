@@ -1,6 +1,6 @@
 """
 Definition of particles and interstellar medium
-$Id: matter.py,v 1.6 2009/03/02 13:50:05 oxon Exp $
+$Id: matter.py,v 1.7 2009/03/02 14:17:38 oxon Exp $
 """
 
 import pkg_resources
@@ -13,6 +13,9 @@ class Particle(object):
     """
     def __init__(self):
         raise NotImplementedError
+
+    def __cmp__(self, other):
+        return cmp(self.__hash__(), other.__hash__())
 
 class ChargedLepton(Particle):
     """
@@ -34,9 +37,6 @@ class ChargedLepton(Particle):
         self.charge = charge
         self.generation = generation
         
-    def __cmp__(self, other):
-        return cmp([self.charge, self.generation], [other.charge, other.generation])
-
     def __hash__(self):
         if self.charge < 0:
             return 11 + self.generation*2
@@ -70,9 +70,6 @@ class Nucleus(Particle):
         # Rough estimation of the mass
         # Mass defect (~1%) is not taken into account 
         self.mass = 938.27203*abs(Z) + 939.56536*(A - abs(Z)) # [MeV]
-
-    def __cmp__(self, other):
-        return cmp([self.Z, self.A], [other.Z, other.A])
     
     def __hash__(self):
         if self.Z > 0:
@@ -86,9 +83,6 @@ class Photon(Particle):
     """
     def __init__(self):
         self.mass = 0.
-        
-    def __cmp__(self, dummy):
-        return 0
     
     def __hash__(self):
         return 22
