@@ -1,12 +1,12 @@
 c Deleted some comment lines from original pp_meson.f to remove errors in f2py
 c Original file is in GALPROP v50.1p developed by I. Moskalenko and A. Strong
 c http://galprop.stanford.edu/web_galprop/galprop_home.html
-c$Id: pp_meson_mod.f,v 1.1 2009/02/23 15:43:52 oxon Exp $
+c$Id: pp_meson_mod.f,v 1.2 2009/03/02 14:55:27 oxon Exp $
 !!**.****|****.****|****.****|****.****|****.****|****.****|****.****|****.****|
 !! * pp_meson.f *                                  galprop package * 9/09/2003 
 !!**"****!****"****!****"****!****"****!****"****!****"****!****"****!****"****|
 
-      function PP_MESON(Esec, Pp1, NA1, NA2, key1)
+      function PP_MESON(Esec, Pp1, key1)
 c***********************************************************************
 c### I.Moskalenko (MPE,Garching) ###   version of 15 April, 1997    ###
 c### PURPOSE: MAIN subprogram for calculation of the LS spectrum of
@@ -47,7 +47,7 @@ c***********************************************************************
       external STECKER, SB_MESON, D_PION
       
       PP_MESON = 0.
-      Pp  = Pp1/NA1
+      Pp  = Pp1
       if(Pp .le. Pth0) return ! the lowest threshold momentum for pp->pi+X
       AI1 = 0.d0
       AI2 = 0.d0
@@ -127,7 +127,6 @@ c Interpolation between P1 & P2 GeV/c; the total cross section is corrected
       if(Pp .le. P1 .or. Pp .ge. P2) A12 = AI1+AI2
 
       PP_MESON = (A12*CS_S-AI3*CS_D) *1.d-3
-     1     *(NA1**(3./8.)+NA2**(3./8.)-1.)**2
 
 c KAON: electron/positron spectrum from pp -> K +X reaction
       if(iabs(key) .ge. 3 .and. iabs(key1) .le. 4) then !KAON decay mode K->mu +nu
@@ -155,7 +154,6 @@ c STEPHENS & BADHWAR: integral over KAON momentum in LS
          AI4=AI4*2.*3.1415926
 
          PP_MESON=(A12*CS_S-AI3*CS_D+AI4*BR1) *1.d-3
-     1     *(NA1**(3./8.)+NA2**(3./8.)-1.)**2
       endif
 ccc      print *, "PP_MESON: ",AI1,AI2,AI3,AI4
       return
