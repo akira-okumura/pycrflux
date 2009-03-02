@@ -1,6 +1,6 @@
 """
 Example of comparison between Kamae et al. 2006 and Dermer 1986
-$Id: ppmodel_comp.py,v 1.1 2009/02/23 16:07:47 oxon Exp $
+$Id: ppmodel_comp.py,v 1.2 2009/03/02 14:59:57 oxon Exp $
 """
 
 import cr_flux
@@ -20,7 +20,7 @@ multi = cr_flux.Multiplicity()
 multi.add_mul(H, He, 3.57)
 multi.add_mul(He, He, 12.6)
 kamae = cr_flux.Kamae2006(multi)
-dermer= cr_flux.Dermer1986(multi)
+dermer= cr_flux.Dermer1986(cr_flux.OrthBuffington())
 gas = cr_flux.GasDensity(cr_ab, ism_ab, 1) # 1 [p/cm^3]
 
 Fg_base = cr_flux.AbsoluteSpectrum(cr_flux.Photon(), Fcr[0].E/100., Fcr[0].dEl/100., Fcr[0].dEh/100.)
