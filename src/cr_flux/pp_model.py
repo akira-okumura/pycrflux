@@ -1,6 +1,6 @@
 """
 Define p-p interaction models.
-$Id: pp_model.py,v 1.4 2009/02/27 16:08:18 oxon Exp $
+$Id: pp_model.py,v 1.5 2009/03/02 14:57:38 oxon Exp $
 """
 
 import math
@@ -131,7 +131,9 @@ class Dermer1986(PPModel):
     """
     def __init__(self, mul):
         PPModel.__init__(self, mul)
-        self._sigma = {}
+        self._sigma = None
+        self._Eg    = numpy.zeros(0)
+        self._Tp    = numpy.zeros(0)
         self.key1 = 0
         
     def sigma_gamma(self, par1, par2, Eg, Tp):
@@ -144,23 +146,29 @@ class Dermer1986(PPModel):
         Tp: An array of kinetic energies of protons in unit of [MeV]
         """
   
-        sigma = numpy.zeros([Eg.size, Tp.size])
+        if (self._sigma != None) and\
+        (self._Eg.size == Eg.size) and numpy.all(self._Eg == Eg) and\
+        (self._Tp.size == Tp.size) and numpy.all(self._Tp == Tp):
+            # Return pre-calculated table to reduce CPU load
+            return self._sigma*self.mul.multiplicity(par1, par2)
+        
+        self._sigma = numpy.zeros([Eg.size, Tp.size])
+        self._Eg = numpy.copy(Eg)
+        self._Tp = numpy.copy(Tp)
 
         for iT in range(Tp.size):
             for iE in range(Eg.size):
                 # Differntial inclusive cross section
                 # sigma(Tp)dN/dEg = sigma(Tp)dN/dln(Eg)/Eg [mb/GeV]
                 Esec = Eg[iE]/1e3
-                T_tot = Tp[iT]*par1.A/1e3 # [GeV]
-                Pp1 = (T_tot**2 + 2*par1.mass/1e3*T_tot)**0.5 # [GeV/c/nucleUS]
-                NA1 = par1.A
-                NA2 = par2.A
-                sigma[iE, iT] = pp_meson.pp_meson(Esec, Pp1, NA1, NA2, self.key1)
+                Tp_ = Tp[iT]/1e3 # [GeV]
+                Pp1 = (Tp_**2 + 2*matter.proton.mass/1e3*Tp_)**0.5 # [GeV/c/n]
+                self._sigma[iE, iT] = pp_meson.pp_meson(Esec, Pp1, self.key1)
 
         # [b/GeV] => [mb/MeV]
         # do nothing
         
-        return sigma
+        return self._sigma*self.mul.multiplicity(par1, par2)
             
 class Mori1997(PPModel):
     """
