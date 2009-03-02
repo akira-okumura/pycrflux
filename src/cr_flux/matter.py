@@ -1,6 +1,6 @@
 """
 Definition of particles and interstellar medium
-$Id: matter.py,v 1.5 2009/02/28 04:31:53 oxon Exp $
+$Id: matter.py,v 1.6 2009/03/02 13:50:05 oxon Exp $
 """
 
 import pkg_resources
@@ -38,10 +38,10 @@ class ChargedLepton(Particle):
         return cmp([self.charge, self.generation], [other.charge, other.generation])
 
     def __hash__(self):
-        if self.charge > 0:
-            return 100*(self.charge*1000 + self.generation) + 1
+        if self.charge < 0:
+            return 11 + self.generation*2
         else:
-            return 100*(-self.charge*1000 + self.generation) + 2
+            return - (11 + self.generation*2)
 
 class Nucleus(Particle):
     """
@@ -76,9 +76,9 @@ class Nucleus(Particle):
     
     def __hash__(self):
         if self.Z > 0:
-            return 100*(self.A*1000 + self.Z) + 3
+            return 1000000000 + self.Z*10000 + self.A*10
         else:
-            return 100*(self.A*1000 - self.Z) + 4
+            return -(1000000000 + self.Z*10000 + self.A*10)
 
 class Photon(Particle):
     """
@@ -91,7 +91,7 @@ class Photon(Particle):
         return 0
     
     def __hash__(self):
-        return 5
+        return 22
 
 class CRAbundance(object):
     """
@@ -297,4 +297,6 @@ class Cloud(Gas):
 proton = Nucleus(1, 1)
 deutron = Nucleus(2, 1)
 alpha = Nucleus(4, 2)
+electron = ChargedLepton(-1, 0)
+positron = ChargedLepton(+1, 0)
 gaisser_table = GaisserTable()
