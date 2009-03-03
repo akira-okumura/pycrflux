@@ -1,6 +1,6 @@
 """
 """
-#$Id: spectrum.py,v 1.8 2009/03/02 16:44:24 oxon Exp $
+#$Id: spectrum.py,v 1.9 2009/03/03 06:46:20 oxon Exp $
 
 import copy
 import decimal
@@ -106,18 +106,18 @@ class Spectrum(object):
         
         # Change the unit of acceptance
         if isinstance(self, AbsoluteSpectrum):
-            aunit = "/s/"
+            aunit = "/s"
         elif isinstance(self, DiffuseSpectrum):
-            aunit = "/cm^{2}/s/sr/"
+            aunit = "/cm^{2}/s/sr"
         elif isinstance(self, PointSourceSpectrum):
-            aunit = "/cm^{2}/s/"
+            aunit = "/cm^{2}/s"
         else:
-            aunit = "/s/"
+            aunit = "/s"
           
         if self.__idx.normalize() == decimal.Decimal("0"):
             yax.SetTitle("dN/dE [%s/%s]" % (aunit, eunit))
         else:
-            yax.SetTitle("E^{%s} dN/dE [%s^{%s}%s%s]" % \
+            yax.SetTitle("E^{%s} dN/dE [%s^{%s}%s/%s]" % \
                          (str(self.__idx.normalize()), eunit,
                           str(self.__idx.normalize()), aunit, eunit))
             
