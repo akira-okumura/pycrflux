@@ -1,6 +1,6 @@
 """
 Definition of particles and interstellar medium
-$Id: matter.py,v 1.8 2009/03/02 14:56:17 oxon Exp $
+$Id: matter.py,v 1.9 2009/03/03 06:46:44 oxon Exp $
 """
 
 import pkg_resources
@@ -309,4 +309,5 @@ deutron = Nucleus(2, 1)
 alpha = Nucleus(4, 2)
 electron = ChargedLepton(-1, 0)
 positron = ChargedLepton(+1, 0)
+photon = Photon()
 gaisser_table = GaisserTable()
