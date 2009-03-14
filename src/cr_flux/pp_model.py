@@ -1,6 +1,6 @@
 """
 Define p-p interaction models.
-$Id: pp_model.py,v 1.5 2009/03/02 14:57:38 oxon Exp $
+$Id: pp_model.py,v 1.6 2009/03/14 07:50:10 oxon Exp $
 """
 
 import math
@@ -227,12 +227,8 @@ class Mori1997(PPModel):
                 self.spec.SetBinContent(j + 1, 10 + k + 1, cont)
 
         for i in range(17, self.NFILES + 1):
-            #TODO: Do we need more files under /lund ?
             fname = pkg_resources.resource_filename("cr_flux", "data/mori/lund/gamma.hist." + self.ext[i])
-            try:
-                f = open(fname)
-            except IOError:
-                continue
+            f = open(fname)
             f.readline() # skip header
             for j, line in enumerate(f.readlines()):
                 spec = float(line.split()[1])
@@ -278,15 +274,15 @@ class Mori1997(PPModel):
         self._Tp = numpy.copy(Tp)
 
         # Ignore error messages in this for loops
-        err = ROOT.gErrorIgnoreLevel;
-        ROOT.gErrorIgnoreLevel = ROOT.kSysError;
+        err = ROOT.gErrorIgnoreLevel
+        ROOT.gErrorIgnoreLevel = ROOT.kSysError
         for iT in range(Tp.size):
             j = (math.log10(Tp[iT]/1e3) + 3.)/0.1 - 24.
             for iE in range(Eg.size):
                 i = (math.log10(Eg[iE]/1e3) + 3.)/0.1 + 1.
                 # Original value does not nclude [/MeV]. Add it in the last term
                 self._sigma[iE, iT] = self.Pi0Crs(Tp[iT]/1e3)*self.spec.Interpolate(i, j)/(Eg[iE]/1e3*self.dbin)
-        ROOT.gErrorIgnoreLevel = err;
+        ROOT.gErrorIgnoreLevel = err
         
         self._sigma *= 1e-3 # [mb/GeV] to [mb/MeV]
 
