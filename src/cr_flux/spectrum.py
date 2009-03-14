@@ -1,6 +1,6 @@
 """
 """
-#$Id: spectrum.py,v 1.9 2009/03/03 06:46:20 oxon Exp $
+#$Id: spectrum.py,v 1.10 2009/03/14 07:51:59 oxon Exp $
 
 import copy
 import decimal
@@ -125,6 +125,21 @@ class Spectrum(object):
         """
         """
         self.__idx = decimal.Decimal(str(idx))
+        self.init_graph()
+
+    def fill_power_law(self, normalization, scale, index):
+        """
+        Create power law spectrum
+        dN/dE = N x (E/E0)^(index)
+    
+        normalization: N, unit depends on the class type
+        scale: Energy scale E0 [MeV]
+        index: Spectrum index (usually negative)
+        """
+        self.F   = normalization*(self.E/scale)**index
+        self.dFh *= 0.
+        self.dFl *= 0.
+        
         self.init_graph()
 
 class AbsoluteSpectrum(Spectrum):
@@ -500,3 +515,17 @@ class FluxModelArchive(object):
         spec = DiffuseSpectrum(par, E, dEl, dEh, F, dFl, dFh)
                     
         return spec
+
+def create_log_binned_energies(emin, emax, nbins):
+    """
+    Create binned energies (E, dEl, dEh)
+    emin: Minimum energy [MeV]
+    emax: Maximum energy [MeV]
+    nbins: Number of bins between emin and emax
+    """
+    step = (float(emax)/float(emin))**(1./nbins)
+    E   = emin*step**0.5*step**numpy.arange(nbins)
+    dEl = E - E/step**0.5
+    dEh = E*step**0.5 - E
+
+    return E, dEl, dEh
