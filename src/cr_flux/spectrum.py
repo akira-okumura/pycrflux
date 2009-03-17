@@ -1,6 +1,6 @@
 """
 """
-#$Id: spectrum.py,v 1.10 2009/03/14 07:51:59 oxon Exp $
+#$Id: spectrum.py,v 1.11 2009/03/17 23:01:11 oxon Exp $
 
 import copy
 import decimal
@@ -158,7 +158,7 @@ class FluxModelArchive(object):
     """
     Archive of cosmic-ray flux of simulation and experimental data.
     """ 
-    def galprop(self, par, R, z):
+    def galprop(self, par, R, z, galdef="54_59Xvarh7S"):
         """
         par: particle type
         R: Distance from the galactic center [kpc]
@@ -168,7 +168,7 @@ class FluxModelArchive(object):
         /nfs/farm/g/glast/u33/diffuse/galprop/FITS/nuclei_full_54_59Xvarh7S.gz 
         """
 
-        fname = pkg_resources.resource_filename("cr_flux", "data/galprop/nuclei_full_54_59Xvarh7S.gz")
+        fname = pkg_resources.resource_filename("cr_flux", "data/galprop/nuclei_full_%s.gz" % galdef)
 
         if par == matter.proton: # H
             pid = 3
