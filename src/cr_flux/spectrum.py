@@ -1,6 +1,6 @@
 """
 """
-#$Id: spectrum.py,v 1.11 2009/03/17 23:01:11 oxon Exp $
+#$Id: spectrum.py,v 1.12 2009/04/07 16:35:04 oxon Exp $
 
 import copy
 import decimal
@@ -121,6 +121,15 @@ class Spectrum(object):
                          (str(self.__idx.normalize()), eunit,
                           str(self.__idx.normalize()), aunit, eunit))
             
+    def scale(self, factor):
+        """
+        Scale the flux and its errors. 
+        """
+        self.F   *= factor
+        self.dFl *= factor
+        self.dFh *= factor
+        self.init_graph()
+    
     def set_index(self, idx):
         """
         """
@@ -139,6 +148,44 @@ class Spectrum(object):
         self.F   = normalization*(self.E/scale)**index
         self.dFh *= 0.
         self.dFl *= 0.
+        
+        self.init_graph()
+        
+    def solar_modulate(self, phi):
+        """
+        Calculate the effect from solar modulation
+        
+        Original code is modulate.cc in GALPROP
+        L. J. Gleeson and W. I. Axford,
+        The Astrophysical Journal 154 (1968) 1011-1026
+        """
+        if isinstance(self.par, matter.Nucleus):
+            charge = self.par.Z
+            m = self.par.mass/self.par.A
+            T = self.E + abs(charge)*phi/self.par.A
+        elif isinstance(self.par, matter.ChargedLepton):
+            charge = abs(self.par.charge)
+            m = self.par.mass
+            T = self.E + abs(charge)*phi
+        else:
+            return
+
+        np = len(self.F)
+        cr_density = self.F*self.E**2
+        density = numpy.zeros(np)
+
+        for i in range(np):
+            for j in range(np):
+                # NOTE! j will be used outside the loop
+                if T[i] < self.E[j]:
+                    break
+            if j == np - 1:
+                density[i] = cr_density[i]
+                break
+            y = cr_density[j - 1] + (T[i] - self.E[j - 1])*(cr_density[j] - cr_density[j - 1])/(self.E[j] - self.E[j - 1])
+            density[i] = y*self.E[i]*(self.E[i] + 2*m)/T[i]/(T[i] + 2*m)*(self.E[i]/T[i])**2
+            
+        self.F = density/self.E**2
         
         self.init_graph()
 
@@ -324,8 +371,8 @@ class FluxModelArchive(object):
         Create spectra of proton and alpha from AMS result.
         J. Alcaraz, et al., Physics Letters B 490 (2000) 27-35
         J. Alcaraz, et al., Physics Letters B 494 (2000) 193-202
-        J. Alcaraz, et al., Physics Letters B 484 (2000) 10Ð22 
-        M. Aguilar, et al., Physics Reports 366 (2002) 331Ð405
+        J. Alcaraz, et al., Physics Letters B 484 (2000) 10-22 
+        M. Aguilar, et al., Physics Reports 366 (2002) 331-405
         """
         if par == matter.proton:
             fname = pkg_resources.resource_filename("cr_flux", "data/ams/alcaraz2000_proton.dat")
