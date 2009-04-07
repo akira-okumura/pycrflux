@@ -1,6 +1,6 @@
 """
 Definition of particles and interstellar medium
-$Id: matter.py,v 1.9 2009/03/03 06:46:44 oxon Exp $
+$Id: matter.py,v 1.10 2009/04/07 16:32:45 oxon Exp $
 """
 
 import pkg_resources
@@ -36,6 +36,12 @@ class ChargedLepton(Particle):
         
         self.charge = charge
         self.generation = generation
+        if self.generation == 0:
+            self.mass = 0.51099891
+        elif self.generation == 1:
+            self.mass = 105.658367
+        else:
+            self.mass = 1776.84
         
     def __hash__(self):
         if self.charge < 0:
