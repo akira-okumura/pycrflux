@@ -1,9 +1,10 @@
 """
 """
-#$Id: spectrum.py,v 1.12 2009/04/07 16:35:04 oxon Exp $
+#$Id: spectrum.py,v 1.13 2009/04/12 02:47:57 oxon Exp $
 
 import copy
 import decimal
+import math
 import numpy
 import pkg_resources
 import pyfits
@@ -290,7 +291,7 @@ class FluxModelArchive(object):
         if not (E.size == dEl.size == dEh.size):
             raise TypeError, "Size of E/dEl/dEh are different"
         
-        F   = numpy.zeros(E.size)
+        F = numpy.zeros(E.size)
 
         m = matter.proton.mass
         if par != matter.proton:
@@ -315,6 +316,34 @@ class FluxModelArchive(object):
                 
             F[i] *= 1e-3 # [/cm^2/s/sr/GeV] -> [/cm^2/s/sr/MeV]
 
+        spec = DiffuseSpectrum(par, E, dEl, dEh, F)
+                    
+        return spec
+    
+    def Honda2004(self, par, E, dEl, dEh):
+        """
+        M. Honda et al. Physical Review D 70 (2004) 043008
+        """
+        if not isinstance(par, matter.Nucleus):
+            raise TypeError, "Invalid particle type"
+        if not (E.size == dEl.size == dEh.size):
+            raise TypeError, "Size of E/dEl/dEh are different"
+        
+        F = numpy.zeros(E.size)
+
+        if par == matter.proton:
+            a, K, b, c = 2.74, 14900, 2.15, 0.21
+        elif par == matter.alpha:
+            a, K, b, c = 2.64, 600, 1.25, 0.14
+        else:
+            a, K, b, c = 0, 0, 0, 0
+        
+        for i in range(E.size):
+            F[i] = K*(E[i]/1e3 + b*math.exp(-c*(E[i]/1e3)**0.5))**(-a)
+
+        # [/m^2/sr/s/GeV] -> [/cm^2/sr/s/(MeV/n)] (x 1e-7)
+        F *= 1e-7
+        
         spec = DiffuseSpectrum(par, E, dEl, dEh, F)
                     
         return spec
