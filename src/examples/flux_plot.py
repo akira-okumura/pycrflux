@@ -1,6 +1,6 @@
 """
 Example of plotting various data of proton and alpha flux
-$Id: flux_plot.py,v 1.2 2009/02/15 02:26:34 oxon Exp $
+$Id: flux_plot.py,v 1.3 2009/04/12 02:48:26 oxon Exp $
 """
 
 import cr_flux
@@ -17,13 +17,15 @@ F_runj = [arc.RUNJOB(cr_flux.proton), arc.RUNJOB(cr_flux.alpha)]
 F_galp = [arc.galprop(cr_flux.proton, 8.5, 0.), arc.galprop(cr_flux.alpha, 8.5, 0.)]
 F_mori = [arc.Mori1997(cr_flux.proton, F_galp[0].E, F_galp[0].dEl, F_galp[0].dEh),
           arc.Mori1997(cr_flux.alpha, F_galp[0].E, F_galp[0].dEl, F_galp[0].dEh)]
+F_honda= [arc.Honda2004(cr_flux.proton, F_galp[0].E, F_galp[0].dEl, F_galp[0].dEh),
+          arc.Honda2004(cr_flux.alpha, F_galp[0].E, F_galp[0].dEl, F_galp[0].dEh)]
 
 # Chanege the flux from dN/dE to E^2.5 x dN/dE
-for f in F_bess, F_ams, F_atic, F_runj, F_galp, F_mori:
+for f in F_bess, F_ams, F_atic, F_runj, F_galp, F_mori, F_honda:
     f[0].set_index(2.5)
     f[1].set_index(2.5)
 
-leg = ROOT.TLegend(0.65, 0.62, 0.88, 0.88)
+leg = ROOT.TLegend(0.55, 0.67, 0.88, 0.88)
 leg.SetFillColor(0)
 
 for F, c, title in (F_bess, ROOT.kOrange + 7, "BESS-TeV"),\
@@ -31,21 +33,19 @@ for F, c, title in (F_bess, ROOT.kOrange + 7, "BESS-TeV"),\
                    (F_atic, ROOT.kMagenta + 2, "ATIC-2"),\
                    (F_runj, ROOT.kBlue + 2, "RUNJOB"):
     F[0].graph.SetMarkerStyle(21)
-    F[1].graph.SetMarkerStyle(22)
+    F[1].graph.SetMarkerStyle(21)
     F[0].graph.SetMarkerColor(c)
     F[1].graph.SetMarkerColor(c)
 
     leg.AddEntry(F[0].graph, title, "p")
-    leg.AddEntry(F[1].graph, title, "p")
 
 for F, c, title in (F_galp, 2, "GALPROP (R = 8.5 [kpc])"),\
-                   (F_mori, 4, "Mori 1997 'median'"):
+                   (F_mori, 4, "Mori 1997 'median'"),\
+                   (F_honda, 6, "Honda et al. 2004"):   
     F[0].graph.SetLineColor(c)
     F[1].graph.SetLineColor(c)
-    F[1].graph.SetLineStyle(2)
     
     leg.AddEntry(F[0].graph, title, "l")
-    leg.AddEntry(F[1].graph, title, "l")
 
 F_bess[0].graph.GetHistogram().SetMinimum(1e2)
 F_bess[0].graph.GetHistogram().SetMaximum(1e5)
@@ -60,7 +60,7 @@ for F in F_ams, F_atic, F_runj:
     F[0].graph.Draw("p same")
     F[1].graph.Draw("p same")
     
-for F in F_galp, F_mori:
+for F in F_galp, F_mori, F_honda:
     F[0].graph.Draw("l same")
     F[1].graph.Draw("l same")
 
