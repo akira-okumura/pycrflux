@@ -1,6 +1,6 @@
 """
 """
-#$Id: spectrum.py,v 1.13 2009/04/12 02:47:57 oxon Exp $
+#$Id: spectrum.py,v 1.14 2009/04/17 13:40:09 oxon Exp $
 
 import copy
 import decimal
@@ -100,27 +100,32 @@ class Spectrum(object):
         # Change the unit of energy
         if isinstance(self.par, matter.Photon):
             eunit = "MeV" # per particle
-            xax.SetTitle("Energy [MeV]")
+            xax.SetTitle("Energy (MeV)")
+        elif isinstance(self.par, matter.ChargedLepton):
+            eunit = "MeV" # per nucleon
+            xax.SetTitle("Kinetic Energy (MeV)")
         else:
             eunit = "(MeV/n)" # per nucleon
-            xax.SetTitle("Kinetic Energy [MeV/n]")
+            xax.SetTitle("Kinetic Energy (MeV/n)")
         
         # Change the unit of acceptance
         if isinstance(self, AbsoluteSpectrum):
-            aunit = "/s"
+            aunit = "s^{-1}"
         elif isinstance(self, DiffuseSpectrum):
-            aunit = "/cm^{2}/s/sr"
+            aunit = "cm^{-2}s^{-1}sr^{-1}"
         elif isinstance(self, PointSourceSpectrum):
-            aunit = "/cm^{2}/s"
+            aunit = "cm^{-2}s^{-1}"
         else:
-            aunit = "/s"
+            aunit = "s^{-1}"
           
         if self.__idx.normalize() == decimal.Decimal("0"):
-            yax.SetTitle("dN/dE [%s/%s]" % (aunit, eunit))
+            yax.SetTitle("dN/dE (%s%s^{-1})" % (aunit, eunit))
+        elif self.__idx.normalize() == decimal.Decimal("1"):
+            yax.SetTitle("E dN/dE (%s)" % aunit)
         else:
-            yax.SetTitle("E^{%s} dN/dE [%s^{%s}%s/%s]" % \
-                         (str(self.__idx.normalize()), eunit,
-                          str(self.__idx.normalize()), aunit, eunit))
+            yax.SetTitle("E^{%s} dN/dE (%s%s^{%s})" % \
+                         (str(self.__idx.normalize()), aunit,
+                          eunit, str((self.__idx.normalize() - 1))))
             
     def scale(self, factor):
         """
