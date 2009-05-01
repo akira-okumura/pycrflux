@@ -1,6 +1,6 @@
 """
 """
-#$Id: spectrum.py,v 1.14 2009/04/17 13:40:09 oxon Exp $
+#$Id: spectrum.py,v 1.15 2009/05/01 15:11:27 oxon Exp $
 
 import copy
 import decimal
@@ -122,6 +122,9 @@ class Spectrum(object):
             yax.SetTitle("dN/dE (%s%s^{-1})" % (aunit, eunit))
         elif self.__idx.normalize() == decimal.Decimal("1"):
             yax.SetTitle("E dN/dE (%s)" % aunit)
+        elif self.__idx.normalize() == decimal.Decimal("2"):
+            yax.SetTitle("E^{%s} dN/dE (%s%s)" % \
+                         (str(self.__idx.normalize()), aunit, eunit))
         else:
             yax.SetTitle("E^{%s} dN/dE (%s%s^{%s})" % \
                          (str(self.__idx.normalize()), aunit,
