@@ -1,6 +1,6 @@
 """
 Define p-p interaction models.
-$Id: pp_model.py,v 1.6 2009/03/14 07:50:10 oxon Exp $
+$Id: pp_model.py,v 1.7 2009/05/17 09:31:55 oxon Exp $
 """
 
 import math
@@ -186,7 +186,7 @@ class Mori1997(PPModel):
         self.NFILES = 76
         # Some arrays includes dummy entry because indices in the original
         # FORTRAN code has double naming conventions
-        self.fact = [0., 1., 0.67, 0.33, 0., 0.] # first one is dummy
+        self.fact = [0., 0.83, 0.67, 0.50, 0.33, 0.17] # first one is dummy
         self.dbin = 10**0.05 - 10**-0.05
         self.ext = ['dummy', '5m1','6m1','7m1','8m1','9m1', # first one is dummy
                     '0e0','1e0','2e0','3e0','4e0','5e0','6e0','7e0','8e0','9e0',
@@ -211,7 +211,8 @@ class Mori1997(PPModel):
             lines = f.readlines()
             for j, line in enumerate(lines): 
                 spec = float(line.split()[1])
-                self.spec.Fill(j, i, spec)
+                bin = self.spec.FindBin(j, i)
+                self.spec.SetBinContent(bin, spec)
         
         # for 3-8GeV, take average with Scaling
         fname = pkg_resources.resource_filename("cr_flux", "data/mori/gamma/gamma-sb.d.low")
@@ -221,18 +222,62 @@ class Mori1997(PPModel):
             for j in range(1, self.NBIN):
                 e1, s1 = [float(x) for x in f.readline().split()]
                 s1 = s1*self.dbin*e1*2
-                cont = self.spec.GetBinContent(j + 1, 10 + k + 1)
-                #TODO: Something wrong ? should be checked by Mori-san
+                bin = self.spec.FindBin(j, 10 + k)
+                cont = self.spec.GetBinContent(bin)
                 cont = cont*self.fact[k] + s1*(1. - self.fact[k])
-                self.spec.SetBinContent(j + 1, 10 + k + 1, cont)
+                self.spec.SetBinContent(bin, cont)
 
-        for i in range(17, self.NFILES + 1):
-            fname = pkg_resources.resource_filename("cr_flux", "data/mori/lund/gamma.hist." + self.ext[i])
-            f = open(fname)
-            f.readline() # skip header
-            for j, line in enumerate(f.readlines()):
-                spec = float(line.split()[1])
-                self.spec.Fill(j, i, spec)
+        # PYTHIA or FRITIOF for >10GeV
+        #for i in range(17, 43 + 1):
+        #    fname = pkg_resources.resource_filename("cr_flux", "data/mori/lund/gamma.hist." + self.ext[i])
+        #    f = open(fname)
+        #    f.readline() # skip header
+        #    for j, line in enumerate(f.readlines()):
+        #        spec = float(line.split()[1])
+        #        bin = self.spec.FindBin(j, i)
+        #        self.spec.SetBinContent(bin, spec)
+
+        # Stephens & Badhwar model for >10GeV
+        fname = pkg_resources.resource_filename("cr_flux", "data/mori/gamma/gamma-sb.d")
+        f = open(fname)
+        f.readline() # Skip the header Tp
+        for j in range(1, self.NBIN):
+            ene, spec = [float(x) for x in f.readline().split()]
+            spec *= self.dbin*ene*2
+            bin = self.spec.FindBin(j, 16)
+            self.spec.SetBinContent(bin, spec)
+        for k in range(1, 50 + 1):
+            sums = 0.
+            f.readline() # Skip the header Tp
+            for j in range(1, self.NBIN):
+                ene, spec = [float(x) for x in f.readline().split()]
+                spec *= self.dbin*ene*2
+                sums += spec/2.
+                bin = self.spec.FindBin(j, k + 16)
+                self.spec.SetBinContent(bin, spec)
+            # normalization
+            for j in range(1, self.NBIN):
+                bin = self.spec.FindBin(j, k + 16)
+                spec = self.spec.GetBinContent(bin)
+                self.spec.SetBinContent(bin, spec/sums)
+
+        # Stephens & Badhwar model for >1E6 GeV
+        fname = pkg_resources.resource_filename("cr_flux", "data/mori/gamma/gamma-sb.d.high")
+        f = open(fname)
+        for k in range(51, 60 + 1):
+            sums = 0.
+            f.readline() # Skip the header Tp
+            for j in range(1, self.NBIN):
+                ene, spec = [float(x) for x in f.readline().split()]
+                spec *= self.dbin*ene*2
+                sums += spec/2.
+                bin = self.spec.FindBin(j, k + 16)
+                self.spec.SetBinContent(bin, spec)
+            # normalization
+            for j in range(1, self.NBIN):
+                bin = self.spec.FindBin(j, k + 16)
+                spec = self.spec.GetBinContent(bin)
+                self.spec.SetBinContent(bin, spec/sums)
 
     def Pi0Crs(self, tp):
         """
@@ -280,7 +325,7 @@ class Mori1997(PPModel):
             j = (math.log10(Tp[iT]/1e3) + 3.)/0.1 - 24.
             for iE in range(Eg.size):
                 i = (math.log10(Eg[iE]/1e3) + 3.)/0.1 + 1.
-                # Original value does not nclude [/MeV]. Add it in the last term
+                # Original value does not include [/MeV]. Add it in the last term
                 self._sigma[iE, iT] = self.Pi0Crs(Tp[iT]/1e3)*self.spec.Interpolate(i, j)/(Eg[iE]/1e3*self.dbin)
         ROOT.gErrorIgnoreLevel = err
         
