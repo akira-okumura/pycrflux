@@ -1,6 +1,6 @@
 """
 """
-#$Id: spectrum.py,v 1.15 2009/05/01 15:11:27 oxon Exp $
+#$Id: spectrum.py,v 1.16 2009/05/17 11:31:52 oxon Exp $
 
 import copy
 import decimal
@@ -179,24 +179,28 @@ class Spectrum(object):
         else:
             return
 
-        np = len(self.F)
-        cr_density = self.F*self.E**2
+        spec = self.__class__(self.par, self.E, self.dEl, self.dEh, self.F, self.dFl, self.dFh)
+
+        np = len(spec.F)
+        cr_density = spec.F*spec.E**2
         density = numpy.zeros(np)
 
         for i in range(np):
             for j in range(np):
                 # NOTE! j will be used outside the loop
-                if T[i] < self.E[j]:
+                if T[i] < spec.E[j]:
                     break
             if j == np - 1:
                 density[i] = cr_density[i]
                 break
-            y = cr_density[j - 1] + (T[i] - self.E[j - 1])*(cr_density[j] - cr_density[j - 1])/(self.E[j] - self.E[j - 1])
-            density[i] = y*self.E[i]*(self.E[i] + 2*m)/T[i]/(T[i] + 2*m)*(self.E[i]/T[i])**2
+            y = cr_density[j - 1] + (T[i] - spec.E[j - 1])*(cr_density[j] - cr_density[j - 1])/(spec.E[j] - spec.E[j - 1])
+            density[i] = y*spec.E[i]*(spec.E[i] + 2*m)/T[i]/(T[i] + 2*m)*(spec.E[i]/T[i])**2
             
-        self.F = density/self.E**2
+        spec.F = density/spec.E**2
         
-        self.init_graph()
+        spec.init_graph()
+        
+        return spec
 
 class AbsoluteSpectrum(Spectrum):
     """
@@ -526,6 +530,37 @@ class FluxModelArchive(object):
             dFh[i] = dFl[i]
             
         spec = DiffuseSpectrum(par, E, dEl, dEh, F, dFl, dFh)
+                    
+        return spec
+
+    def BESS_LIS(self, par, E, dEl, dEh):
+        """
+        Create spectra of proton and alpha from the long-term result of BESS.
+        These spectra are "de-modulated" from observed ones.
+        Y. Shikaze, et al., Astroparticle Physics 28 (2007) 154Ð167
+        """
+        if not (par == matter.proton or par == matter.alpha):
+            raise TypeError, "Invalid particle type"
+        
+        def lis(spec, A, P1, P2):
+            m = spec.par.mass
+            for i, e in enumerate(spec.E):
+                e *= spec.par.A # per particle
+                g = (e + m)/m # gamma factor
+                b = (1. - 1./g**2)**0.5
+                p = ((e + m)**2 - m**2)**0.5
+                spec.F[i] = (A/1e7)*b**P1*(p/spec.par.A*spec.par.Z/1e3)**-P2
+                spec.dFl[i] = spec.dFh[i] = 0.
+
+        F = numpy.zeros(E.size)
+        spec = DiffuseSpectrum(par, E, dEl, dEh, F)
+        
+        if spec.par == matter.proton:
+            lis(spec, 1.94e4, 0.70, 2.76)
+        elif spec.par == matter.alpha:
+            lis(spec, 7.10e3, 0.50, 2.78)
+
+        spec.init_graph()
                     
         return spec
 
