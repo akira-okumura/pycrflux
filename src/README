@@ -1,4 +1,4 @@
-$Id: README,v 1.3 2009/02/27 16:09:42 oxon Exp $
+$Id: README,v 1.4 2009/05/19 17:05:09 oxon Exp $
 PyCRFlux is a python package that has some useful utilities to plot CR fluxes
 and calculate diffuse gamma-ray flux.
 
@@ -18,7 +18,7 @@ and calculate diffuse gamma-ray flux.
   http://numpy.scipy.org/
 - pyfits
   http://www.stsci.edu/resources/software_hardware/pyfits
-- cparamlib 2.1.0 and modified ParamModel.py
+- cparamlib 2.1.0 and modified ParamModel.py (included in ./ext)
   http://www.slac.stanford.edu/~niklas/cparamlib/index.html
 - FORTRAN compiler g77/gfortran/ifort etc.
 
