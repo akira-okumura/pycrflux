@@ -1,6 +1,6 @@
 """
 """
-#$Id: spectrum.py,v 1.16 2009/05/17 11:31:52 oxon Exp $
+#$Id: spectrum.py,v 1.17 2009/05/25 17:55:39 oxon Exp $
 
 import copy
 import decimal
@@ -523,7 +523,7 @@ class FluxModelArchive(object):
         for i, line in enumerate(lines):
             val = [float(x) for x in line.split()]
             # [GeV/n] -> [MeV/n] (x 1e3)
-            # [/mass^2/sr/s/(GeV/n)] -> [/cm^2/sr/s/(MeV/n)] (x 1e-7)
+            # [/m^2/sr/s/(GeV/n)] -> [/cm^2/sr/s/(MeV/n)] (x 1e-7)
             E[i], dEl[i], dEh[i], F[i], dFl[i] =\
             val[2]*1e3, (val[2] - val[0])*1e3, (val[1] - val[2])*1e3,\
             val[3]*1e-7, (val[4]**2 + val[5]**2)**0.5*1e-7
@@ -588,10 +588,79 @@ class FluxModelArchive(object):
         for i, line in enumerate(lines):
             val = [float(x) for x in line.split()]
             # [GeV/n] -> [MeV/n] (x 1e3)
-            # [/mass^2/sr/s/(GeV/n)] -> [/cm^2/sr/s/(MeV/n)] (x 1e-7)
+            # [/m^2/sr/s/(GeV/n)] -> [/cm^2/sr/s/(MeV/n)] (x 1e-7)
             E[i], dEl[i], dEh[i], F[i], dFh[i], dFl[i] =\
             val[2]*1e3, (val[2] - val[0])*1e3, (val[1] - val[2])*1e3,\
             val[3]*1e-7, val[4]*1e-7, val[5]*1e-7
+            
+        spec = DiffuseSpectrum(par, E, dEl, dEh, F, dFl, dFh)
+                    
+        return spec
+
+    def IMAX(self, par):
+        """
+        Create spectra of proton and alpha from IMAX result.
+        W. Menn, et al., The Astrophysical Journal 533 (2000) 281-297
+        """
+        if par == matter.proton:
+            fname = pkg_resources.resource_filename("cr_flux", "data/imax/menn2000_proton.dat")
+        elif par == matter.alpha:
+            fname = pkg_resources.resource_filename("cr_flux", "data/imax/menn2000_alpha.dat")
+        else:
+            raise TypeError, "Invalid particle type"
+        
+        f = open(fname)
+        lines = f.readlines()[2:] # skip the header
+        E   = numpy.zeros(len(lines))
+        dEh = numpy.zeros(len(lines))
+        dEl = numpy.zeros(len(lines))
+        F   = numpy.zeros(len(lines))
+        dFh = numpy.zeros(len(lines))
+        dFl = numpy.zeros(len(lines))
+        
+        for i, line in enumerate(lines):
+            val = [float(x) for x in line.split()]
+            # [GeV/n] -> [MeV/n] (x 1e3)
+            # [/m^2/sr/s/(GeV/n)] -> [/cm^2/sr/s/(MeV/n)] (x 1e-7)
+            E[i], dEl[i], dEh[i], F[i], dFl[i] =\
+            val[2]*1e3, (val[2] - val[0])*1e3, (val[1] - val[2])*1e3,\
+            val[3]*1e-7*10**val[6], (val[4]**2 + val[5]**2)**0.5*1e-7*10**val[6]
+            dFh[i] = dFl[i]
+            
+        spec = DiffuseSpectrum(par, E, dEl, dEh, F, dFl, dFh)
+                    
+        return spec
+
+    def MASS(self, par):
+        """
+        Create spectrum of proton from MASS result.
+        R. Bellotti, et al. Phsyical Review D 60 (1999) 052002
+        """
+        if par == matter.proton:
+            fname = pkg_resources.resource_filename("cr_flux", "data/mass/bellotti1999_proton.dat")
+        else:
+            raise TypeError, "Invalid particle type"
+        
+        f = open(fname)
+        lines = f.readlines()[2:] # skip the header
+        E   = numpy.zeros(len(lines))
+        dEh = numpy.zeros(len(lines))
+        dEl = numpy.zeros(len(lines))
+        F   = numpy.zeros(len(lines))
+        dFh = numpy.zeros(len(lines))
+        dFl = numpy.zeros(len(lines))
+        
+        for i, line in enumerate(lines):
+            val = [float(x) for x in line.split()]
+            # [GeV/n] -> [MeV/n] (x 1e3)
+            # [/m^2/sr/s/GeV] -> [/cm^2/sr/s/MeV] (x 1e-7)
+            E1 = 1e3*val[0]
+            E2 = 1e3*val[1]
+            E[i] = 1e3*val[2]
+            dEl[i] = E[i] - E1
+            dEh[i] = E2 - E[i]
+            F[i] = val[3]*1e-7
+            dFh[i] = dFl[i] = val[4]*1e-7
             
         spec = DiffuseSpectrum(par, E, dEl, dEh, F, dFl, dFh)
                     
@@ -621,7 +690,7 @@ class FluxModelArchive(object):
         for i, line in enumerate(lines):
             val = [float(x) for x in line.split()]
             # [GeV/n] -> [MeV/n] (x 1e3)
-            # [/mass^2/sr/s/(GeV/n)] -> [/cm^2/sr/s/(MeV/n)] (x 1e-7)
+            # [/m^2/sr/s/(GeV/n)] -> [/cm^2/sr/s/(MeV/n)] (x 1e-7)
             E1 = 1e3*val[0]*10**val[2]
             E2 = 1e3*val[1]*10**val[2]
             E[i] = (E1*E2)**0.5
