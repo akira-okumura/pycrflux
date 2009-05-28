@@ -1,6 +1,6 @@
 """
 """
-#$Id: spectrum.py,v 1.17 2009/05/25 17:55:39 oxon Exp $
+#$Id: spectrum.py,v 1.18 2009/05/28 16:14:01 oxon Exp $
 
 import copy
 import decimal
@@ -564,6 +564,74 @@ class FluxModelArchive(object):
                     
         return spec
 
+    def CAPRICE94(self, par):
+        """
+        Create spectra of electron and positron from CAPRICE94 result.
+        M. Boezio, et al., The Astrophysical Journal 532 (2000) 653-669
+        """
+        if par == matter.electron:
+            fname = pkg_resources.resource_filename("cr_flux", "data/caprice/boezio2000_electron.dat")
+        elif par == matter.positron:
+            fname = pkg_resources.resource_filename("cr_flux", "data/caprice/boezio2000_positron.dat")
+        else:
+            raise TypeError, "Invalid particle type"
+        
+        f = open(fname)
+        lines = f.readlines()[2:] # skip the header
+        E   = numpy.zeros(len(lines))
+        dEh = numpy.zeros(len(lines))
+        dEl = numpy.zeros(len(lines))
+        F   = numpy.zeros(len(lines))
+        dFh = numpy.zeros(len(lines))
+        dFl = numpy.zeros(len(lines))
+        
+        for i, line in enumerate(lines):
+            val = [float(x) for x in line.split()]
+            # [GeV] -> [MeV] (x 1e3)
+            # [/m^2/sr/s/GeV] -> [/cm^2/sr/s/MeV] (x 1e-7)
+            E[i], dEl[i], dEh[i], F[i], dFl[i], dFh[i] =\
+            val[2]*1e3, (val[2] - val[0])*1e3, (val[1] - val[2])*1e3,\
+            val[3]*1e-7*10**val[6], val[4]*1e-7*10**val[6], val[5]*1e-7*10**val[6]
+            
+        spec = DiffuseSpectrum(par, E, dEl, dEh, F, dFl, dFh)
+                    
+        return spec
+
+    def Fermi(self, par):
+        """
+        Create spectra of electron (+positron) from Fermi/LAT result.
+        A. A. Abdo, et al., Physical Review Letters 102 (2009) 181101
+        """
+        if par == matter.electron:
+            fname = pkg_resources.resource_filename("cr_flux", "data/fermi/abdo2008_electron.dat")
+        else:
+            raise TypeError, "Invalid particle type"
+        
+        f = open(fname)
+        lines = f.readlines()[2:] # skip the header
+        E   = numpy.zeros(len(lines))
+        dEh = numpy.zeros(len(lines))
+        dEl = numpy.zeros(len(lines))
+        F   = numpy.zeros(len(lines))
+        dFh = numpy.zeros(len(lines))
+        dFl = numpy.zeros(len(lines))
+        
+        for i, line in enumerate(lines):
+            val = [float(x) for x in line.split()]
+            # [GeV] -> [MeV] (x 1e3)
+            # [GeV/m^2/sr/s/GeV] -> [/cm^2/sr/s/MeV]
+            E[i] = (val[0] + val[1])*0.5*1e3
+            dEl[i], dEh[i] = E[i] - val[0]*1e3, val[1]*1e3 - E[i]
+            for j in range(2, 6):
+                val[j] = val[j]/(E[i]/1e3)**3*1e-7
+            F[i] = val[2]
+            dFh[i] = (val[3]**2 + val[4]**2)**0.5
+            dFl[i] = (val[3]**2 + val[5]**2)**0.5
+
+        spec = DiffuseSpectrum(par, E, dEl, dEh, F, dFl, dFh)
+                    
+        return spec
+
     def HEAT(self, par):
         """
         Create spectra from HEAT result.
@@ -592,6 +660,58 @@ class FluxModelArchive(object):
             E[i], dEl[i], dEh[i], F[i], dFh[i], dFl[i] =\
             val[2]*1e3, (val[2] - val[0])*1e3, (val[1] - val[2])*1e3,\
             val[3]*1e-7, val[4]*1e-7, val[5]*1e-7
+            
+        spec = DiffuseSpectrum(par, E, dEl, dEh, F, dFl, dFh)
+                    
+        return spec
+
+    def HESS(self, par, year):
+        """
+        Create spectra from HESS result.
+        F. A. Aharonian, et al., Physical Review Letters 101 (2008) 261104
+        F. A. Aharonian, et al., Physical Review Letters ? (2009) ?
+        """
+        if par == matter.electron:
+            if year == 2008:
+                fname1 = pkg_resources.resource_filename("cr_flux", "data/hess/aharonian2008_electron.dat")
+                fname2 = pkg_resources.resource_filename("cr_flux", "data/hess/aharonian2008_electron_sys.dat")
+            elif year == 2009:
+                fname1 = pkg_resources.resource_filename("cr_flux", "data/hess/aharonian2009_electron.dat")
+                fname2 = pkg_resources.resource_filename("cr_flux", "data/hess/aharonian2009_electron_sys.dat")
+            else:
+                raise TypeError, "Invalid year"
+        else:
+            raise TypeError, "Invalid particle type"
+        
+        gra1 = ROOT.TGraph(0) # upper systematic error 
+        gra2 = ROOT.TGraph(0) # lower systematic error 
+        
+        f = open(fname2)
+        lines = f.readlines()[2:] # skip the header
+
+        for i, line in enumerate(lines):
+            # [GeV^2/m^2/sr/s] -> [/m^2/sr/s/GeV]
+            val = [float(x) for x in line.split()]
+            gra1.SetPoint(i, val[0], val[1]/val[0]**3)
+            gra2.SetPoint(i, val[0], val[2]/val[0]**3)
+        
+        f = open(fname1)
+        lines = f.readlines()[2:] # skip the header
+        E   = numpy.zeros(len(lines))
+        dEh = numpy.zeros(len(lines))
+        dEl = numpy.zeros(len(lines))
+        F   = numpy.zeros(len(lines))
+        dFh = numpy.zeros(len(lines))
+        dFl = numpy.zeros(len(lines))
+        
+        for i, line in enumerate(lines):
+            val = [float(x) for x in line.split()]
+            # [GeV] -> [MeV] (x 1e3)
+            # [/m^2/sr/s/GeV] -> [/cm^2/sr/s/MeV] (x 1e-7)
+            E[i] = val[0]*1e3
+            F[i] = val[1]/val[0]**3*1e-7
+            dFl[i] = 1e-7*((val[2]/val[0]**3)**2 + (val[1]/val[0]**3 - gra2.Eval(val[0]))**2)**0.5
+            dFh[i] = 1e-7*((val[3]/val[0]**3)**2 + (gra1.Eval(val[0]) - val[1]/val[0]**3)**2)**0.5
             
         spec = DiffuseSpectrum(par, E, dEl, dEh, F, dFl, dFh)
                     
