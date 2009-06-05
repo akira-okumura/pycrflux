@@ -1,6 +1,6 @@
 """
 """
-#$Id: spectrum.py,v 1.18 2009/05/28 16:14:01 oxon Exp $
+#$Id: spectrum.py,v 1.19 2009/06/05 14:22:00 oxon Exp $
 
 import copy
 import decimal
@@ -77,6 +77,19 @@ class Spectrum(object):
     def __mul__(self, factor):
         return self.__class__(self.par, self.E, self.dEl, self.dEh,
                               self.F*factor, self.dFl*factor, self.dFh*factor)
+
+    def get_mean_energy(self):
+        """
+        Calculate weighted mean energy
+        """
+        n = 0.
+        e = 0.
+        for i in range(self.E.size):
+            dn = self.F[i]*(self.dEl[i] + self.dEh[i]) # dN/dE*dE
+            n += dn
+            e += self.E[i]*dn # dN*E
+        
+        return e/n
 
     def init_graph(self):
         """
