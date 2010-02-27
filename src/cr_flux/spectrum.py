@@ -1,6 +1,6 @@
 """
 """
-#$Id: spectrum.py,v 1.19 2009/06/05 14:22:00 oxon Exp $
+#$Id: spectrum.py,v 1.20 2010/02/27 04:19:05 oxon Exp $
 
 import copy
 import decimal
@@ -383,11 +383,13 @@ class FluxModelArchive(object):
             fname = pkg_resources.resource_filename("cr_flux", "data/atic/panov2007_proton.dat")
         elif par == matter.alpha:
             fname = pkg_resources.resource_filename("cr_flux", "data/atic/panov2007_alpha.dat")
+        elif par == matter.electron:
+            fname = pkg_resources.resource_filename("cr_flux", "data/atic/chang2008_electron.dat")
         else:
             raise TypeError, "Invalid particle type"
 
         f = open(fname)
-        lines = f.readlines()[1:] # skip the header
+        lines = f.readlines()[2:] # skip the header
         E   = numpy.zeros(len(lines))
         dEh = numpy.zeros(len(lines))
         dEl = numpy.zeros(len(lines))
@@ -415,6 +417,23 @@ class FluxModelArchive(object):
                 dEh[i] = val[1]*1e3/par.A - E[i]
                 F[i]   = val[3]*par.A*1e-7
                 dFl[i] = dFh[i] = val[4]*par.A*1e-7
+        elif par == matter.electron:
+            for i, line in enumerate(lines):
+                val = [float(x) for x in line.split()]
+                # [GeV] -> [MeV] (x 1e3)
+                # [GeV^3/m^2/s/sr/GeV] -> [/cm^2/sr/s/MeV] (x 1e-7)
+                E[i] = val[2]
+                dEl[i] = E[i] - val[0]
+                dEh[i] = val[1] - E[i]
+                F[i]   = val[4]
+                dFh[i] = val[5] - F[i]
+                dFl[i] = F[i] - val[6]
+                F[i]   *= 1e-7/E[i]**3
+                dFl[i] *= 1e-7/E[i]**3
+                dFh[i] *= 1e-7/E[i]**3
+                E[i]   *= 1e3
+                dEl[i] *= 1e3
+                dEh[i] *= 1e3
             
         spec = DiffuseSpectrum(par, E, dEl, dEh, F, dFl, dFh)
                     

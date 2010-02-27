@@ -1,3 +1,4 @@
+# $Id: panov2007_alpha.dat,v 1.2 2010/02/27 04:19:04 oxon Exp $
 # E1[GeV/particle] E2[GeV/particle] E[GeV/particle] F[/m^2/sr/s/(GeV/particle)] dF
 39.8 63.1 49.2 0.173 0.00217
 63.1 100 77.9 0.0514 0.000282
