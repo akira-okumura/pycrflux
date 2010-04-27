@@ -1,7 +1,7 @@
 c Deleted some comment lines from original pp_meson.f to remove errors in f2py
 c Original file is in GALPROP v50.1p developed by I. Moskalenko and A. Strong
 c http://galprop.stanford.edu/web_galprop/galprop_home.html
-c$Id: pp_meson_mod.f,v 1.2 2009/03/02 14:55:27 oxon Exp $
+c$Id: pp_meson_mod.f,v 1.3 2010/04/27 06:46:57 oxon Exp $
 !!**.****|****.****|****.****|****.****|****.****|****.****|****.****|****.****|
 !! * pp_meson.f *                                  galprop package * 9/09/2003 
 !!**"****!****"****!****"****!****"****!****"****!****"****!****"****!****"****|
@@ -317,7 +317,7 @@ c         if(gam .lt. 2.d4) then
      4  +6.d0*dlog(gam*bet) +30.d0*dlog((1.d0+bet)*gam) )/36.d0
          else
             FMU =
-     1-(Pe/Mmu)**3*(2.d0/3.d0 +(8.d0/15.d0 +(71.d0/168.d0+(149.d0/432.d0 
+     1-(Pe/Mmu)**3*(2.d0/3.d0 +(8.d0/15.d0 +(71.d0/168.d0+(149.d0/432.d0
      2         +611.d0/2112.d0/gam**2)/gam**2)/gam**2)/gam**2)/gam**3 
      3+(Pe/Mmu)**2*(4.d0+dlog(4.d0) +(3.d0/2.d0 +(13.d0/16.d0 
      4         +(13.d0/24.d0 +(205.d0/512.d0 +(403.d0/1280.d0 
