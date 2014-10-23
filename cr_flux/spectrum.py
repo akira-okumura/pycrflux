@@ -569,7 +569,7 @@ class FluxModelArchive(object):
         """
         Create spectra of proton and alpha from the long-term result of BESS.
         These spectra are "de-modulated" from observed ones.
-        Y. Shikaze, et al., Astroparticle Physics 28 (2007) 154Ð167
+        Y. Shikaze, et al., Astroparticle Physics 28 (2007) 154ï¿½167
         """
         if not (par == matter.proton or par == matter.alpha):
             raise TypeError, "Invalid particle type"
@@ -701,7 +701,7 @@ class FluxModelArchive(object):
         """
         Create spectra from HESS result.
         F. A. Aharonian, et al., Physical Review Letters 101 (2008) 261104
-        F. A. Aharonian, et al., Physical Review Letters ? (2009) ?
+        F. A. Aharonian, et al., A&A 508 (2009) 561-564 
         """
         if par == matter.electron:
             if year == 2008:
