@@ -531,6 +531,44 @@ class FluxModelArchive(object):
                     
         return spec
         
+    def AMS02(self, par):
+        """
+        L. Accardo, et al., Physical Review Letters 113 (2014) 121101
+        M. Aguilar, et al., Physical Review Letters 113 (2014) 121102
+        """
+        if par == matter.electron:
+            fname = pkg_resources.resource_filename("cr_flux", "data/ams/aguilar2014_electron.dat")
+        elif par == matter.positron:
+            fname = pkg_resources.resource_filename("cr_flux", "data/ams/aguilar2014_positron.dat")
+        else:
+            raise TypeError, "Invalid particle type"
+
+        f = open(fname)
+        lines = f.readlines()[1:] # skip the header
+        E   = numpy.zeros(len(lines))
+        dEh = numpy.zeros(len(lines))
+        dEl = numpy.zeros(len(lines))
+        F   = numpy.zeros(len(lines))
+        dFh = numpy.zeros(len(lines))
+        dFl = numpy.zeros(len(lines))
+
+        if par == matter.electron or par == matter.positron:
+            for i, line in enumerate(lines):
+                val = [float(x) for x in line.split()]
+                # [GeV/n] -> [MeV/n] (x 1e3)
+                # [/m^2/sr/s/(GeV/n)] -> [/cm^2/sr/s/(MeV/n)] (x 1e-7)
+                val[0] *= 1e3 # [GeV/n] -> [MeV/n]
+                val[1] *= 1e3 # [GeV/n] -> [MeV/n]
+                E[i]   = (val[1] * val[0])**0.5
+                dEl[i] = E[i] - val[0]
+                dEh[i] = val[1] - E[i]
+                F[i]   = val[2]*1e-7 # [/cm^2/sr/s/(MeV/n)]
+                dFl[i] = dFh[i] = ((val[3]**2 + val[4]**2)**0.5)*1e-7
+        
+        spec = DiffuseSpectrum(par, E, dEl, dEh, F, dFl, dFh)
+                    
+        return spec
+
     def BESS_TeV(self, par):
         """
         Create spectra of proton and alpha from BESS-TeV result.
@@ -629,13 +667,20 @@ class FluxModelArchive(object):
                     
         return spec
 
-    def Fermi(self, par):
+    def Fermi(self, par, year=2009):
         """
         Create spectra of electron (+positron) from Fermi/LAT result.
         A. A. Abdo, et al., Physical Review Letters 102 (2009) 181101
         """
         if par == matter.electron:
-            fname = pkg_resources.resource_filename("cr_flux", "data/fermi/abdo2008_electron.dat")
+            if year == 2009:
+                fname = pkg_resources.resource_filename("cr_flux", "data/fermi/abdo2009_electron.dat")
+            elif year == 2012:
+                fname = pkg_resources.resource_filename("cr_flux", "data/fermi/ackermann2012_electron.dat")
+            else:
+                raise TypeError, "Invalid year"
+        elif par == matter.positron:
+            fname = pkg_resources.resource_filename("cr_flux", "data/fermi/ackermann2012_positron.dat")
         else:
             raise TypeError, "Invalid particle type"
         
@@ -651,11 +696,17 @@ class FluxModelArchive(object):
         for i, line in enumerate(lines):
             val = [float(x) for x in line.split()]
             # [GeV] -> [MeV] (x 1e3)
-            # [GeV/m^2/sr/s/GeV] -> [/cm^2/sr/s/MeV]
             E[i] = (val[0] + val[1])*0.5*1e3
             dEl[i], dEh[i] = E[i] - val[0]*1e3, val[1]*1e3 - E[i]
-            for j in range(2, 6):
-                val[j] = val[j]/(E[i]/1e3)**3*1e-7
+            if year == 2009:
+                # [GeV^3/m^2/sr/s/GeV] -> [/cm^2/sr/s/MeV]
+                for j in range(2, 6):
+                    val[j] = val[j]/(E[i]/1e3)**3*1e-7
+            elif year == 2012:
+                # [/m^2/sr/s/GeV] -> [/cm^2/sr/s/MeV]
+                for j in range(2, 6):
+                    val[j] = val[j]*1e-7
+
             F[i] = val[2]
             dFh[i] = (val[3]**2 + val[4]**2)**0.5
             dFl[i] = (val[3]**2 + val[5]**2)**0.5
@@ -818,6 +869,58 @@ class FluxModelArchive(object):
                     
         return spec
 
+    def PAMELA(self, par, year):
+        """
+        Create spectra of electron (+positron) from Fermi/LAT result.
+        A. A. Abdo, et al., Physical Review Letters 102 (2009) 181101
+        """
+        if par == matter.electron:
+            if year == 2011:
+                fname = pkg_resources.resource_filename("cr_flux", "data/pamela/adriani2011_electron.dat")
+            else:
+                raise TypeError, "Invalid year"
+        elif par == matter.positron:
+            if year == 2013:
+                fname = pkg_resources.resource_filename("cr_flux", "data/pamela/adriani2013_positron.dat")
+            else:
+                raise TypeError, "Invalid year"
+        else:
+            raise TypeError, "Invalid particle type"
+        
+        f = open(fname)
+        lines = f.readlines()[2:] # skip the header
+        E   = numpy.zeros(len(lines))
+        dEh = numpy.zeros(len(lines))
+        dEl = numpy.zeros(len(lines))
+        F   = numpy.zeros(len(lines))
+        dFh = numpy.zeros(len(lines))
+        dFl = numpy.zeros(len(lines))
+        
+        for i, line in enumerate(lines):
+            val = [float(x) for x in line.split()]
+            # [GeV] -> [MeV] (x 1e3)
+            E[i] = (val[0] + val[1])*0.5*1e3
+            dEl[i], dEh[i] = E[i] - val[0]*1e3, val[1]*1e3 - E[i]
+            # [/m^2/sr/s/GeV] -> [/cm^2/sr/s/MeV]
+            if year == 2013:
+                for j in range(2, 5):
+                    val[j] = val[j]*1e-7
+            elif year == 2011:
+                for j in range(2, 6):
+                    val[j] = val[j]*1e-7
+
+            F[i] = val[2]
+            if year == 2011:
+                dFh[i] = (val[3]**2 + val[4]**2)**0.5
+                dFl[i] = (val[4]**2 + val[5]**2)**0.5
+            elif year == 2013:
+                dFh[i] = (val[3]**2 + val[4]**2)**0.5
+                dFl[i] = dFh[i]
+
+        spec = DiffuseSpectrum(par, E, dEl, dEh, F, dFl, dFh)
+                    
+        return spec
+    
     def RUNJOB(self, par):
         """
         Create spectra of proton and alpha from RUNJOB result.
